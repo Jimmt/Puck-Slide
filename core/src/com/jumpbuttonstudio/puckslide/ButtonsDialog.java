@@ -30,8 +30,7 @@ public class ButtonsDialog extends Dialog {
 		play = new ImageButton(style);
 		play.addListener(new ClickListener() {
 			public void clicked(InputEvent event, float x, float y) {
-				addAction(Actions.alpha(0, 0.3f));
-				gameScreen.logo.addAction(Actions.alpha(0, 0.3f));
+				gameScreen.enterGameMode();
 			}
 		});
 		getContentTable().add(play);
