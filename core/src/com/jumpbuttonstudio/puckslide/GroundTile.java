@@ -3,6 +3,7 @@ package com.jumpbuttonstudio.puckslide;
 import com.badlogic.gdx.physics.box2d.Body;
 import com.badlogic.gdx.physics.box2d.BodyDef;
 import com.badlogic.gdx.physics.box2d.BodyDef.BodyType;
+import com.badlogic.gdx.physics.box2d.EdgeShape;
 import com.badlogic.gdx.physics.box2d.FixtureDef;
 import com.badlogic.gdx.physics.box2d.PolygonShape;
 import com.badlogic.gdx.physics.box2d.World;
@@ -35,8 +36,10 @@ public class GroundTile extends Image {
 		body = world.createBody(bd);
 		FixtureDef fd = new FixtureDef();
 		fd.friction = type.friction;
-		PolygonShape shape = new PolygonShape();
-		shape.setAsBox(getWidth() / 2, getHeight() / 2);
+		EdgeShape shape = new EdgeShape();
+		shape.set(-getWidth() / 2, getHeight() / 2, getWidth() / 2, getHeight() / 2);
+//		PolygonShape shape = new PolygonShape();
+//		shape.setAsBox(getWidth() / 2, getHeight() / 2);
 		fd.shape = shape;
 		body.createFixture(fd);
 
