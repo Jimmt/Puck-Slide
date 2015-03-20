@@ -11,10 +11,11 @@ import com.badlogic.gdx.scenes.scene2d.ui.Image;
 
 public class GroundTile extends Image {
 	Body body;
+	TileType type;
 
 	enum TileType {
-		MUD("Tiles/02.png", 1.0f), ICE_FLAT("Tiles/01.png", 0.0f), ICE_LEFT("Tiles/00.png", 0.0f), ICE_RIGHT(
-				"Tiles/03.png", 0.0f);
+		MUD("Tiles/02.png", 1.0f), ICE_FLAT("Tiles/01.png", 0.5f), ICE_LEFT("Tiles/00.png", 0.5f), ICE_RIGHT(
+				"Tiles/03.png", 0.5f);
 
 		private String path;
 		private float friction;
@@ -27,6 +28,8 @@ public class GroundTile extends Image {
 
 	public GroundTile(float x, TileType type, World world) {
 		super(Textures.getTex(type.path));
+		
+		this.type = type;
 
 		setSize(getWidth() * Constants.SCALE, getHeight() * Constants.SCALE);
 

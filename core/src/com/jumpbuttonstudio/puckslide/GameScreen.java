@@ -5,11 +5,8 @@ import com.badlogic.gdx.Input.Keys;
 import com.badlogic.gdx.InputMultiplexer;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
-import com.badlogic.gdx.physics.box2d.Body;
-import com.badlogic.gdx.physics.box2d.BodyDef;
-import com.badlogic.gdx.physics.box2d.BodyDef.BodyType;
-import com.badlogic.gdx.physics.box2d.EdgeShape;
-import com.badlogic.gdx.physics.box2d.FixtureDef;
+import com.badlogic.gdx.scenes.scene2d.Action;
+import com.badlogic.gdx.scenes.scene2d.Actor;
 import com.badlogic.gdx.scenes.scene2d.actions.Actions;
 import com.badlogic.gdx.scenes.scene2d.ui.Image;
 import com.badlogic.gdx.scenes.scene2d.ui.Label;
@@ -19,12 +16,17 @@ import com.badlogic.gdx.utils.Array;
 public class GameScreen extends BaseScreen {
 	ButtonsDialog dialog;
 	Background background;
-	Image logo;
+	Image logo, arrow, flag;
 	Label scoreLabel;
-	int score;
+	int score, lastMudTile;
+	float totalWidth = 3.09f;
 	Puck puck;
 	Array<GroundTile> tiles;
-	boolean inGameMode;
+	InputMultiplexer multiplexer;
+	boolean inGameMode, gameOver;
+	PowerBar powerBar;
+	
+	boolean tappa;
 
 	public GameScreen(PuckSlide game) {
 		super(game);
@@ -41,7 +43,8 @@ public class GameScreen extends BaseScreen {
 		background = new Background(camera);
 		stage.addActor(background);
 
-		Gdx.input.setInputProcessor(new InputMultiplexer(hudStage, stage));
+		multiplexer = new InputMultiplexer(hudStage, stage);
+		Gdx.input.setInputProcessor(multiplexer);
 
 		LabelStyle labelStyle = new LabelStyle();
 		labelStyle.font = new BitmapFont(Gdx.files.internal("Font/font.fnt"));
@@ -57,33 +60,77 @@ public class GameScreen extends BaseScreen {
 		enterMenuMode();
 	}
 
+	class VisibleAction extends Action {
+		Actor actor;
+		boolean visible;
+
+		public VisibleAction(Actor actor, boolean visible) {
+			this.actor = actor;
+			this.visible = visible;
+		}
+
+		@Override
+		public boolean act(float delta) {
+			actor.setVisible(visible);
+			return true;
+		}
+
+	}
+
 	public void enterGameMode() {
 		inGameMode = true;
-		scoreLabel.addAction(Actions.alpha(1, 0.3f));
-		dialog.addAction(Actions.alpha(0, 0.3f));
-		logo.addAction(Actions.alpha(0, 0.3f));
+		scoreLabel.addAction(Actions.sequence(Actions.alpha(1, 0.3f), new VisibleAction(scoreLabel,
+				false)));
+		dialog.addAction(Actions.sequence(Actions.alpha(0, 0.3f), new VisibleAction(dialog, false)));
+		logo.addAction(Actions.sequence(Actions.alpha(0, 0.3f), new VisibleAction(logo, false)));
 
-		float totalWidth = 3.09f;
-		float startingX = Constants.SCLWIDTH / 2 - totalWidth / 4;
+		puck = new Puck(addTiles(Constants.SCLWIDTH / 2 - totalWidth / 4, true), 1.83f * 1.5f, world);
+		stage.addActor(puck);
+
+		arrow = new Image(Textures.getTex("Object/arrow.png"));
+		arrow.setSize(arrow.getWidth() * Constants.SCALE, arrow.getHeight() * Constants.SCALE);
+		flag = new Image(Textures.getTex("Object/flag.png"));
+		flag.setSize(flag.getWidth() * Constants.SCALE, flag.getHeight() * Constants.SCALE);
+		stage.addActor(arrow);
+		stage.addActor(flag);
+
+		arrow.setPosition(puck.getX() + puck.getWidth() / 2 - arrow.getWidth() / 2, puck.getY()
+				+ puck.getHeight() + arrow.getHeight() / 2);
+
+		powerBar = new PowerBar(puck);
+		powerBar.setPosition(Constants.WIDTH / 2 - powerBar.getWidth() / 2, powerBar.getHeight());
+		hudStage.addActor(powerBar);
+		multiplexer.addProcessor(powerBar);
+	}
+
+	public float addTiles(float modX, boolean leftEdge) {
+		float startingX = modX;
 		float fadeTime = 0.1f;
 
-		GroundTile leftTile = new GroundTile(startingX, GroundTile.TileType.ICE_LEFT, world);
-		tiles.add(leftTile);
-		leftTile.addAction(Actions.sequence(Actions.alpha(0), Actions.alpha(1, fadeTime)));
-		puck = new Puck(startingX, leftTile.getHeight() * 1.5f, world);
-		stage.addActor(puck);
-		startingX += 0.36f;
+		if (leftEdge) {
+			GroundTile leftTile = new GroundTile(startingX, GroundTile.TileType.ICE_LEFT, world);
+			tiles.add(leftTile);
+			leftTile.addAction(Actions.sequence(Actions.alpha(0), Actions.alpha(1, fadeTime)));
+			startingX += 0.36f;
+		} else {
+			GroundTile leftTile = new GroundTile(startingX, GroundTile.TileType.ICE_FLAT, world);
+			tiles.add(leftTile);
+			leftTile.addAction(Actions.sequence(Actions.alpha(0), Actions.alpha(1, fadeTime)));
+			startingX += 0.36f;
+		}
 
 		for (int i = 0; i < 2; i++) {
 			GroundTile iceTile = new GroundTile(startingX, GroundTile.TileType.ICE_FLAT, world);
 			tiles.add(iceTile);
-			iceTile.addAction(Actions.sequence(Actions.alpha(0), Actions.delay((1 + i) * fadeTime), Actions.alpha(1, fadeTime)));
+			iceTile.addAction(Actions.sequence(Actions.alpha(0), Actions.delay((1 + i) * fadeTime),
+					Actions.alpha(1, fadeTime)));
 			startingX += iceTile.getWidth();
 		}
 		for (int i = 0; i < 3; i++) {
 			GroundTile mudTile = new GroundTile(startingX, GroundTile.TileType.MUD, world);
 			tiles.add(mudTile);
-			mudTile.addAction(Actions.sequence(Actions.alpha(0), Actions.delay((3 + i) * fadeTime), Actions.alpha(1, fadeTime)));
+			mudTile.addAction(Actions.sequence(Actions.alpha(0), Actions.delay((3 + i) * fadeTime),
+					Actions.alpha(1, fadeTime)));
 
 			if (i == 2) {
 				startingX += 0.48f;
@@ -94,19 +141,30 @@ public class GameScreen extends BaseScreen {
 
 		GroundTile rightTile = new GroundTile(startingX, GroundTile.TileType.ICE_RIGHT, world);
 		tiles.add(rightTile);
-		rightTile.addAction(Actions.sequence(Actions.alpha(0), Actions.delay(6 * fadeTime), Actions.alpha(1, fadeTime)));
+		rightTile.addAction(Actions.sequence(Actions.alpha(0), Actions.delay(6 * fadeTime),
+				Actions.alpha(1, fadeTime)));
 		startingX += rightTile.getWidth();
 
 		for (GroundTile t : tiles) {
 			stage.addActor(t);
 		}
+
+		return Constants.SCLWIDTH / 2 - totalWidth / 4;
+	}
+
+	public void gameOver() {
+		if (!gameOver) {
+			gameOver = true;
+			System.out.println("GAME OVER");
+		}
 	}
 
 	public void enterMenuMode() {
 		inGameMode = false;
-		scoreLabel.addAction(Actions.alpha(0, 0.3f));
-		dialog.addAction(Actions.alpha(1, 0.3f));
-		logo.addAction(Actions.alpha(1, 0.3f));
+		scoreLabel.addAction(Actions.sequence(Actions.alpha(0, 0.3f), new VisibleAction(scoreLabel,
+				true)));
+		dialog.addAction(Actions.sequence(Actions.alpha(1, 0.3f), new VisibleAction(dialog, true)));
+		logo.addAction(Actions.sequence(Actions.alpha(1, 0.3f), new VisibleAction(logo, true)));
 	}
 
 	@Override
@@ -117,13 +175,38 @@ public class GameScreen extends BaseScreen {
 //
 // }
 
-		camera.update();
-		if (Gdx.input.isKeyPressed(Keys.D)) {
-			camera.position.set(camera.position.x + 0.1f, camera.position.y, camera.position.z);
+		if (inGameMode) {
+			arrow.setY(puck.getY() + puck.getHeight() + arrow.getHeight() / 2);
+			if (powerBar.launched) {
+				for (int i = 0; i < tiles.size; i++) {
+					if (tiles.get(i).type == GroundTile.TileType.MUD) {
+						lastMudTile = i;
+					}
+				}
+			}
+			if (powerBar.check) {
+				if (puck.getX() < tiles.get(lastMudTile).getX() + tiles.get(lastMudTile).getWidth()) {
+					gameOver();
+				}
+				if (puck.getY() < tiles.get(0).getY() + tiles.get(0).getHeight()) {
+					gameOver();
+				}
+			}
+
 		}
 
+		camera.update();
+
+		if (tiles.size > 0) {
+			camera.position.set(tiles.get(tiles.size / 2).body.getPosition().x, camera.position.y,
+					0);
+		}
+
+		if (Gdx.input.isKeyPressed(Keys.Q) && !tappa) {
+			tappa = true;
+			addTiles(tiles.get(tiles.size - 1).getX() + tiles.get(tiles.size - 1).getWidth(), false);
+		}
 		scoreLabel.setText(String.valueOf(score));
 
 	}
-
 }

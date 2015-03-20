@@ -1,7 +1,6 @@
 package com.jumpbuttonstudio.puckslide;
 
-import com.badlogic.gdx.Gdx;
-import com.badlogic.gdx.Input.Keys;
+import com.badlogic.gdx.InputProcessor;
 import com.badlogic.gdx.physics.box2d.Body;
 import com.badlogic.gdx.physics.box2d.BodyDef;
 import com.badlogic.gdx.physics.box2d.BodyDef.BodyType;
@@ -10,7 +9,7 @@ import com.badlogic.gdx.physics.box2d.PolygonShape;
 import com.badlogic.gdx.physics.box2d.World;
 import com.badlogic.gdx.scenes.scene2d.ui.Image;
 
-public class Puck extends Image {
+public class Puck extends Image  {
 	Body body;
 
 	public Puck(float x, float y, World world) {
@@ -28,7 +27,10 @@ public class Puck extends Image {
 		shape.setAsBox(getWidth() / 2, getHeight() / 2);
 		fd.shape = shape;
 		fd.density = 1.0f;
+		fd.friction = 0.1f;
 		body.createFixture(fd);
+		
+		setPosition(body.getPosition().x - getWidth() / 2, body.getPosition().y - getHeight() / 2);
 		
 	}
 
@@ -36,10 +38,8 @@ public class Puck extends Image {
 	public void act(float delta) {
 		super.act(delta);
 		
-		if(Gdx.input.isKeyPressed(Keys.Q)){
-			body.applyForceToCenter(1f, 0, true);
-		}
 		setPosition(body.getPosition().x - getWidth() / 2, body.getPosition().y - getHeight() / 2);
 	}
+
 
 }
