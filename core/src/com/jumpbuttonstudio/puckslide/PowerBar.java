@@ -7,6 +7,7 @@ import com.badlogic.gdx.scenes.scene2d.actions.Actions;
 import com.badlogic.gdx.scenes.scene2d.ui.Image;
 
 public class PowerBar extends Image implements InputProcessor {
+	GameScreen gameScreen;
 	boolean startTime, launched, check;
 	float timeDown, timeMax = 1.0f;
 	float launchTime, timeCap = 1f;
@@ -14,8 +15,10 @@ public class PowerBar extends Image implements InputProcessor {
 	Image barBG, bar;
 	Puck puck;
 
-	public PowerBar(Puck puck) {
+	public PowerBar(Puck puck, GameScreen gameScreen) {
 		super(Textures.getTex("UI/powerbar.png"));
+		
+		this.gameScreen = gameScreen;
 
 		this.puck = puck;
 
@@ -50,12 +53,16 @@ public class PowerBar extends Image implements InputProcessor {
 		if (launched) {
 			if (launchTime > timeCap) {
 				launchTime = 0;
+				gameScreen.addTiles(gameScreen.lastTileX(), false);
+				
 				launched = false;
 				check = true;
 			} else {
 				launchTime += delta;
 			}
 		}
+		
+		puck.launched = launched;
 
 	}
 

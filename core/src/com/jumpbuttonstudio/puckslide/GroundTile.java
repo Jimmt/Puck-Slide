@@ -28,7 +28,7 @@ public class GroundTile extends Image {
 
 	public GroundTile(float x, TileType type, World world) {
 		super(Textures.getTex(type.path));
-		
+
 		this.type = type;
 
 		setSize(getWidth() * Constants.SCALE, getHeight() * Constants.SCALE);
@@ -41,10 +41,16 @@ public class GroundTile extends Image {
 		fd.friction = type.friction;
 		EdgeShape shape = new EdgeShape();
 		shape.set(-getWidth() / 2, getHeight() / 2, getWidth() / 2, getHeight() / 2);
-//		PolygonShape shape = new PolygonShape();
-//		shape.setAsBox(getWidth() / 2, getHeight() / 2);
+// PolygonShape shape = new PolygonShape();
+// shape.setAsBox(getWidth() / 2, getHeight() / 2);
 		fd.shape = shape;
 		body.createFixture(fd);
+
+		if (type == TileType.MUD) {
+			body.setUserData(new UserData("mud", this));
+		} else {
+			body.setUserData(new UserData("ice", this));
+		}
 
 	}
 

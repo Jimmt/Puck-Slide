@@ -5,6 +5,8 @@ import com.badlogic.gdx.Input.Keys;
 import com.badlogic.gdx.InputMultiplexer;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
+import com.badlogic.gdx.graphics.g2d.ParticleEffect;
+import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.scenes.scene2d.Action;
 import com.badlogic.gdx.scenes.scene2d.Actor;
 import com.badlogic.gdx.scenes.scene2d.actions.Actions;
@@ -19,17 +21,20 @@ public class GameScreen extends BaseScreen {
 	Image logo, arrow, flag;
 	Label scoreLabel;
 	int score, lastMudTile;
-	float totalWidth = 3.09f;
+	float totalWidth = 3.09f, camX, lastSnowChange, snowChangeTime = 2f;
 	Puck puck;
 	Array<GroundTile> tiles;
 	InputMultiplexer multiplexer;
 	boolean inGameMode, gameOver;
 	PowerBar powerBar;
-	
-	boolean tappa;
+	ParticleEffect snow;
+	GameContactListener listener;
 
 	public GameScreen(PuckSlide game) {
 		super(game);
+
+		listener = new GameContactListener();
+		world.setContactListener(listener);
 
 		logo = new Image(Textures.getTex("logo.png"));
 		logo.setPosition(Constants.WIDTH / 2 - logo.getWidth() / 2,
@@ -58,6 +63,7 @@ public class GameScreen extends BaseScreen {
 		tiles = new Array<GroundTile>();
 
 		enterMenuMode();
+
 	}
 
 	class VisibleAction extends Action {
@@ -80,11 +86,12 @@ public class GameScreen extends BaseScreen {
 	public void enterGameMode() {
 		inGameMode = true;
 		scoreLabel.addAction(Actions.sequence(Actions.alpha(1, 0.3f), new VisibleAction(scoreLabel,
-				false)));
+				true)));
 		dialog.addAction(Actions.sequence(Actions.alpha(0, 0.3f), new VisibleAction(dialog, false)));
 		logo.addAction(Actions.sequence(Actions.alpha(0, 0.3f), new VisibleAction(logo, false)));
 
-		puck = new Puck(addTiles(Constants.SCLWIDTH / 2 - totalWidth / 4, true), 1.83f * 1.5f, world);
+		puck = new Puck(addTiles(Constants.SCLWIDTH / 2 - totalWidth / 4, true), 1.83f * 1.5f,
+				world);
 		stage.addActor(puck);
 
 		arrow = new Image(Textures.getTex("Object/arrow.png"));
@@ -97,10 +104,19 @@ public class GameScreen extends BaseScreen {
 		arrow.setPosition(puck.getX() + puck.getWidth() / 2 - arrow.getWidth() / 2, puck.getY()
 				+ puck.getHeight() + arrow.getHeight() / 2);
 
-		powerBar = new PowerBar(puck);
+		powerBar = new PowerBar(puck, this);
 		powerBar.setPosition(Constants.WIDTH / 2 - powerBar.getWidth() / 2, powerBar.getHeight());
 		hudStage.addActor(powerBar);
 		multiplexer.addProcessor(powerBar);
+
+		setupSnow();
+	}
+
+	public void setupSnow() {
+		snow = new ParticleEffect();
+		snow.load(Gdx.files.internal("Effect/snow.p"), Gdx.files.internal("Effect/"));
+		Utils.scaleEffect(snow);
+		snow.start();
 	}
 
 	public float addTiles(float modX, boolean leftEdge) {
@@ -152,6 +168,10 @@ public class GameScreen extends BaseScreen {
 		return Constants.SCLWIDTH / 2 - totalWidth / 4;
 	}
 
+	public float lastTileX() {
+		return tiles.get(tiles.size - 1).getX() + tiles.get(tiles.size - 1).getWidth();
+	}
+
 	public void gameOver() {
 		if (!gameOver) {
 			gameOver = true;
@@ -171,14 +191,34 @@ public class GameScreen extends BaseScreen {
 	public void render(float delta) {
 		super.render(delta);
 
-// for (int i = 0; i < tiles.size; i++) {
-//
-// }
+		if (snow != null) {
+			snow.update(delta);
+			stage.getBatch().begin();
+			snow.draw(stage.getBatch());
+			stage.getBatch().end();
+			snow.setPosition(0, Constants.SCLHEIGHT);
+
+			if (lastSnowChange > snowChangeTime) {
+				lastSnowChange = 0;
+				snow.getEmitters().get(0).getEmission().setHigh(MathUtils.random(0, 300));
+				snow.getEmitters()
+						.get(0)
+						.getWind()
+						.setHigh(MathUtils.random(-150 * Constants.SCALE, -50 * Constants.SCALE),
+								MathUtils.random(-300 * Constants.SCALE, -200 * Constants.SCALE));
+				snowChangeTime = MathUtils.random(2, 5);
+			} else {
+				lastSnowChange += delta;
+			}
+		}
+
+		hudStage.draw();
 
 		if (inGameMode) {
 			arrow.setY(puck.getY() + puck.getHeight() + arrow.getHeight() / 2);
 			if (powerBar.launched) {
 				for (int i = 0; i < tiles.size; i++) {
+
 					if (tiles.get(i).type == GroundTile.TileType.MUD) {
 						lastMudTile = i;
 					}
@@ -191,21 +231,22 @@ public class GameScreen extends BaseScreen {
 				if (puck.getY() < tiles.get(0).getY() + tiles.get(0).getHeight()) {
 					gameOver();
 				}
+
 			}
 
 		}
 
 		camera.update();
 
-		if (tiles.size > 0) {
-			camera.position.set(tiles.get(tiles.size / 2).body.getPosition().x, camera.position.y,
-					0);
+		if (tiles.size > 0 && powerBar.check) {
+			camX = puck.body.getPosition().x;
+			if (camera.position.x < camX) {
+				camera.position.set(camera.position.x + 0.05f, camera.position.y, 0);
+			} else {
+
+			}
 		}
 
-		if (Gdx.input.isKeyPressed(Keys.Q) && !tappa) {
-			tappa = true;
-			addTiles(tiles.get(tiles.size - 1).getX() + tiles.get(tiles.size - 1).getWidth(), false);
-		}
 		scoreLabel.setText(String.valueOf(score));
 
 	}

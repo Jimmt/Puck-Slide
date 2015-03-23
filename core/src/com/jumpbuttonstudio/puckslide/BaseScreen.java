@@ -49,9 +49,9 @@ public class BaseScreen implements Screen {
 		stage.draw();
 
 		hudStage.act(delta);
-		hudStage.draw();
 		
-		renderer.render(world, camera.combined);
+		
+//		renderer.render(world, camera.combined);
 	}
 
 	@Override
