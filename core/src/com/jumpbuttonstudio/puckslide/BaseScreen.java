@@ -17,8 +17,11 @@ public class BaseScreen implements Screen {
 	Skin skin;
 	World world;
 	Box2DDebugRenderer renderer;
+	PuckSlide game;
 
 	public BaseScreen(PuckSlide game) {
+		this.game = game;
+		
 		StretchViewport viewport = new StretchViewport(Constants.SCLWIDTH, Constants.SCLHEIGHT);
 		stage = new Stage(viewport);
 		StretchViewport hudViewport = new StretchViewport(Constants.WIDTH, Constants.HEIGHT);
@@ -51,7 +54,7 @@ public class BaseScreen implements Screen {
 		hudStage.act(delta);
 		
 		
-//		renderer.render(world, camera.combined);
+		renderer.render(world, camera.combined);
 	}
 
 	@Override

@@ -73,8 +73,8 @@ timeline0: 0.0
 - Scale - 
 lowMin: 0.0
 lowMax: 0.0
-highMin: 10.0
-highMax: 10.0
+highMin: 7.0
+highMax: 13.0
 relative: false
 scalingCount: 1
 scaling0: 1.0

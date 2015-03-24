@@ -28,7 +28,7 @@ public class Puck extends Image {
 		body = world.createBody(bd);
 		FixtureDef fd = new FixtureDef();
 		PolygonShape shape = new PolygonShape();
-		shape.setAsBox(getWidth() / 2, getHeight() / 2);
+		shape.setAsBox(0.29f / 2, getHeight() / 2);
 		fd.shape = shape;
 		fd.density = 1.0f;
 		fd.friction = 0.1f;

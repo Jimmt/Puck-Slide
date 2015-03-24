@@ -1,7 +1,6 @@
 package com.jumpbuttonstudio.puckslide;
 
 import com.badlogic.gdx.Gdx;
-import com.badlogic.gdx.Input.Keys;
 import com.badlogic.gdx.InputMultiplexer;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
@@ -14,24 +13,29 @@ import com.badlogic.gdx.scenes.scene2d.ui.Image;
 import com.badlogic.gdx.scenes.scene2d.ui.Label;
 import com.badlogic.gdx.scenes.scene2d.ui.Label.LabelStyle;
 import com.badlogic.gdx.utils.Array;
+import com.jumpbuttonstudio.puckslide.GroundTile.TileType;
 
 public class GameScreen extends BaseScreen {
 	ButtonsDialog dialog;
+	RetryDialog retryDialog;
 	Background background;
 	Image logo, arrow, flag;
-	Label scoreLabel;
-	int score, lastMudTile;
-	float totalWidth = 3.09f, camX, lastSnowChange, snowChangeTime = 2f;
+	Label scoreLabel, gameOverLabel;
+	int score, lastMudTile, firstMudTile;
+	float totalWidth, camX, lastSnowChange, snowChangeTime = 2f, startingX;
+	float fadeTime = 0.1f;
 	Puck puck;
-	Array<GroundTile> tiles;
+	Array<GroundTile> tiles, temp;
 	InputMultiplexer multiplexer;
 	boolean inGameMode, gameOver;
 	PowerBar powerBar;
 	ParticleEffect snow;
 	GameContactListener listener;
 
-	public GameScreen(PuckSlide game) {
+	public GameScreen(PuckSlide game, boolean gameOver) {
 		super(game);
+
+		this.gameOver = gameOver;
 
 		listener = new GameContactListener();
 		world.setContactListener(listener);
@@ -44,6 +48,19 @@ public class GameScreen extends BaseScreen {
 		dialog = new ButtonsDialog(this, skin);
 		dialog.show(hudStage);
 		dialog.setY(Constants.HEIGHT - logo.getHeight() * 1.75f - dialog.getHeight());
+
+		retryDialog = new RetryDialog(this, skin);
+		retryDialog.show(hudStage);
+		retryDialog.setY(Constants.HEIGHT - logo.getHeight() * 1.75f - retryDialog.getHeight());
+
+		if (gameOver) {
+			retryDialog.setVisible(true);
+			dialog.setVisible(false);
+		} else {
+			retryDialog.setVisible(false);
+			dialog.setVisible(true);
+
+		}
 
 		background = new Background(camera);
 		stage.addActor(background);
@@ -58,12 +75,23 @@ public class GameScreen extends BaseScreen {
 		scoreLabel = new Label("0", labelStyle);
 		scoreLabel.setPosition(Constants.WIDTH / 2, Constants.HEIGHT - scoreLabel.getHeight());
 		scoreLabel.addAction(Actions.alpha(0));
+		gameOverLabel = new Label("Game Over", labelStyle);
+		gameOverLabel.setPosition(Constants.WIDTH / 2 - gameOverLabel.getWidth() / 2, retryDialog.getY() + gameOverLabel.getHeight() * 1.5f);
 		hudStage.addActor(scoreLabel);
+		hudStage.addActor(gameOverLabel);
 
 		tiles = new Array<GroundTile>();
+		temp = new Array<GroundTile>();
 
 		enterMenuMode();
 
+		if (gameOver) {
+			logo.getActions().clear();
+			logo.setVisible(false);
+			gameOverLabel.setVisible(true);
+		} else {
+			gameOverLabel.setVisible(false);
+		}
 	}
 
 	class VisibleAction extends Action {
@@ -87,11 +115,13 @@ public class GameScreen extends BaseScreen {
 		inGameMode = true;
 		scoreLabel.addAction(Actions.sequence(Actions.alpha(1, 0.3f), new VisibleAction(scoreLabel,
 				true)));
-		dialog.addAction(Actions.sequence(Actions.alpha(0, 0.3f), new VisibleAction(dialog, false)));
+		dialog.setVisible(false);
+		retryDialog.setVisible(false);
 		logo.addAction(Actions.sequence(Actions.alpha(0, 0.3f), new VisibleAction(logo, false)));
+		gameOverLabel.addAction(Actions.sequence(Actions.alpha(0, 0.3f), new VisibleAction(gameOverLabel, false)));
+		addTiles(Constants.SCLWIDTH / 2 - 3.09f / 4, true);
 
-		puck = new Puck(addTiles(Constants.SCLWIDTH / 2 - totalWidth / 4, true), 1.83f * 1.5f,
-				world);
+		puck = new Puck(tiles.get(0).body.getPosition().x + 0.21f, 1.83f * 1.5f, world);
 		stage.addActor(puck);
 
 		arrow = new Image(Textures.getTex("Object/arrow.png"));
@@ -119,53 +149,43 @@ public class GameScreen extends BaseScreen {
 		snow.start();
 	}
 
-	public float addTiles(float modX, boolean leftEdge) {
-		float startingX = modX;
-		float fadeTime = 0.1f;
+	public void addTile(TileType type) {
+		if (temp.size > 1) {
+			startingX += temp.get(temp.size - 1).getWidth();
+		}
+		GroundTile tile = new GroundTile(startingX, type, world);
+		totalWidth += tile.getWidth();
+		tile.addAction(Actions.sequence(Actions.alpha(0),
+				Actions.delay((temp.size - 1) * fadeTime), Actions.alpha(1, 0.3f)));
+		temp.add(tile);
+
+		stage.addActor(tile);
+	}
+
+	public void addTiles(float modX, boolean leftEdge) {
+		startingX = modX;
 
 		if (leftEdge) {
-			GroundTile leftTile = new GroundTile(startingX, GroundTile.TileType.ICE_LEFT, world);
-			tiles.add(leftTile);
-			leftTile.addAction(Actions.sequence(Actions.alpha(0), Actions.alpha(1, fadeTime)));
-			startingX += 0.36f;
+			addTile(GroundTile.TileType.ICE_LEFT);
 		} else {
-			GroundTile leftTile = new GroundTile(startingX, GroundTile.TileType.ICE_FLAT, world);
-			tiles.add(leftTile);
-			leftTile.addAction(Actions.sequence(Actions.alpha(0), Actions.alpha(1, fadeTime)));
-			startingX += 0.36f;
+			addTile(GroundTile.TileType.ICE_FLAT);
 		}
 
-		for (int i = 0; i < 2; i++) {
-			GroundTile iceTile = new GroundTile(startingX, GroundTile.TileType.ICE_FLAT, world);
-			tiles.add(iceTile);
-			iceTile.addAction(Actions.sequence(Actions.alpha(0), Actions.delay((1 + i) * fadeTime),
-					Actions.alpha(1, fadeTime)));
-			startingX += iceTile.getWidth();
+		for (int i = 0; i < MathUtils.random(2, 4); i++) {
+			addTile(GroundTile.TileType.ICE_FLAT);
 		}
-		for (int i = 0; i < 3; i++) {
-			GroundTile mudTile = new GroundTile(startingX, GroundTile.TileType.MUD, world);
-			tiles.add(mudTile);
-			mudTile.addAction(Actions.sequence(Actions.alpha(0), Actions.delay((3 + i) * fadeTime),
-					Actions.alpha(1, fadeTime)));
-
-			if (i == 2) {
-				startingX += 0.48f;
-			} else {
-				startingX += mudTile.getWidth();
-			}
+		for (int i = 0; i < MathUtils.random(2, 4); i++) {
+			addTile(GroundTile.TileType.MUD);
 		}
 
-		GroundTile rightTile = new GroundTile(startingX, GroundTile.TileType.ICE_RIGHT, world);
-		tiles.add(rightTile);
-		rightTile.addAction(Actions.sequence(Actions.alpha(0), Actions.delay(6 * fadeTime),
-				Actions.alpha(1, fadeTime)));
-		startingX += rightTile.getWidth();
+		addTile(GroundTile.TileType.ICE_RIGHT);
 
-		for (GroundTile t : tiles) {
-			stage.addActor(t);
+		for (GroundTile t : temp) {
+			tiles.add(t);
 		}
-
-		return Constants.SCLWIDTH / 2 - totalWidth / 4;
+		temp.clear();
+		camX += totalWidth;
+		totalWidth = 0;
 	}
 
 	public float lastTileX() {
@@ -175,7 +195,7 @@ public class GameScreen extends BaseScreen {
 	public void gameOver() {
 		if (!gameOver) {
 			gameOver = true;
-			System.out.println("GAME OVER");
+			game.setScreen(new GameScreen(game, true));
 		}
 	}
 
@@ -183,8 +203,15 @@ public class GameScreen extends BaseScreen {
 		inGameMode = false;
 		scoreLabel.addAction(Actions.sequence(Actions.alpha(0, 0.3f), new VisibleAction(scoreLabel,
 				true)));
-		dialog.addAction(Actions.sequence(Actions.alpha(1, 0.3f), new VisibleAction(dialog, true)));
+
 		logo.addAction(Actions.sequence(Actions.alpha(1, 0.3f), new VisibleAction(logo, true)));
+
+		if (powerBar != null) {
+			powerBar.addAction(Actions.sequence(Actions.alpha(0, 0.3f), new VisibleAction(powerBar,
+					true)));
+		}
+
+		gameOver = false;
 	}
 
 	@Override
@@ -200,7 +227,7 @@ public class GameScreen extends BaseScreen {
 
 			if (lastSnowChange > snowChangeTime) {
 				lastSnowChange = 0;
-				snow.getEmitters().get(0).getEmission().setHigh(MathUtils.random(0, 300));
+				snow.getEmitters().get(0).getEmission().setHigh(MathUtils.random(0, 275));
 				snow.getEmitters()
 						.get(0)
 						.getWind()
@@ -216,16 +243,18 @@ public class GameScreen extends BaseScreen {
 
 		if (inGameMode) {
 			arrow.setY(puck.getY() + puck.getHeight() + arrow.getHeight() / 2);
+
 			if (powerBar.launched) {
 				for (int i = 0; i < tiles.size; i++) {
-
 					if (tiles.get(i).type == GroundTile.TileType.MUD) {
 						lastMudTile = i;
 					}
 				}
 			}
+
 			if (powerBar.check) {
-				if (puck.getX() < tiles.get(lastMudTile).getX() + tiles.get(lastMudTile).getWidth()) {
+				if (puck.getX() + 0.06f < tiles.get(lastMudTile).getX()
+						+ tiles.get(lastMudTile).getWidth()) {
 					gameOver();
 				}
 				if (puck.getY() < tiles.get(0).getY() + tiles.get(0).getHeight()) {
@@ -239,7 +268,6 @@ public class GameScreen extends BaseScreen {
 		camera.update();
 
 		if (tiles.size > 0 && powerBar.check) {
-			camX = puck.body.getPosition().x;
 			if (camera.position.x < camX) {
 				camera.position.set(camera.position.x + 0.05f, camera.position.y, 0);
 			} else {
