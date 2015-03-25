@@ -53,7 +53,6 @@ public class BaseScreen implements Screen {
 
 		hudStage.act(delta);
 		
-		
 		renderer.render(world, camera.combined);
 	}
 

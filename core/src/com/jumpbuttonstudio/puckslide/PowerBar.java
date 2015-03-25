@@ -17,7 +17,7 @@ public class PowerBar extends Image implements InputProcessor {
 
 	public PowerBar(Puck puck, GameScreen gameScreen) {
 		super(Textures.getTex("UI/powerbar.png"));
-		
+
 		this.gameScreen = gameScreen;
 
 		this.puck = puck;
@@ -43,7 +43,7 @@ public class PowerBar extends Image implements InputProcessor {
 
 			if (barX > getX() + 8) {
 
-				puck.body.applyForceToCenter(5 + (timeDown / timeMax) * 4, 0, false);
+				puck.body.applyForceToCenter(5 + (timeDown / timeMax) * 10, 0, false);
 				launched = true;
 			}
 			timeDown = 0;
@@ -54,14 +54,14 @@ public class PowerBar extends Image implements InputProcessor {
 			if (launchTime > timeCap) {
 				launchTime = 0;
 				gameScreen.addTiles(gameScreen.lastTileX(), false);
-				
+
 				launched = false;
 				check = true;
 			} else {
 				launchTime += delta;
 			}
 		}
-		
+
 		puck.launched = launched;
 
 	}
@@ -105,7 +105,7 @@ public class PowerBar extends Image implements InputProcessor {
 	@Override
 	public boolean touchUp(int screenX, int screenY, int pointer, int button) {
 		startTime = false;
-		
+
 		return false;
 	}
 

@@ -31,7 +31,7 @@ public class Puck extends Image {
 		shape.setAsBox(0.29f / 2, getHeight() / 2);
 		fd.shape = shape;
 		fd.density = 1.0f;
-		fd.friction = 0.1f;
+		fd.friction = 0.5f;
 		body.createFixture(fd);
 		body.setUserData(new UserData("puck", this));
 

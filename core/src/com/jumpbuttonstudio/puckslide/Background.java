@@ -24,7 +24,7 @@ public class Background extends Actor {
 	float nextBackCloud = 0, nextFog = 0, nextMountain = -1.5f, nextBackMountain = 0f,
 			nextTree = MathUtils.random(0, 3);
 	float lastOffset;
-	float cloudHeight = Textures.getTex("Background/cloudsBack.png").getHeight() / 100f;
+	float cloudHeight = Textures.getTex("Background/cloudsback.png").getHeight() / 100f;
 	float mountainHeight = Textures.getTex("Background/Montfront.png").getHeight() / 100f;
 
 	public Background(OrthographicCamera camera) {

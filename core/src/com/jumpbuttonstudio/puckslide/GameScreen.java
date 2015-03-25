@@ -1,11 +1,14 @@
 package com.jumpbuttonstudio.puckslide;
 
 import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.Input.Keys;
 import com.badlogic.gdx.InputMultiplexer;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.ParticleEffect;
+import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.math.MathUtils;
+import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.scenes.scene2d.Action;
 import com.badlogic.gdx.scenes.scene2d.Actor;
 import com.badlogic.gdx.scenes.scene2d.actions.Actions;
@@ -20,9 +23,10 @@ public class GameScreen extends BaseScreen {
 	RetryDialog retryDialog;
 	Background background;
 	Image logo, arrow, flag;
-	Label scoreLabel, gameOverLabel;
+	Label scoreLabel;
+	PointsLabel pointsLabel;
 	int score, lastMudTile, firstMudTile;
-	float totalWidth, camX, lastSnowChange, snowChangeTime = 2f, startingX;
+	float totalWidth, camX, lastSnowChange, snowChangeTime = 2f, startingX, lastFlagX;
 	float fadeTime = 0.1f;
 	Puck puck;
 	Array<GroundTile> tiles, temp;
@@ -34,6 +38,8 @@ public class GameScreen extends BaseScreen {
 
 	public GameScreen(PuckSlide game, boolean gameOver) {
 		super(game);
+
+		Prefs.init();
 
 		this.gameOver = gameOver;
 
@@ -51,7 +57,6 @@ public class GameScreen extends BaseScreen {
 
 		retryDialog = new RetryDialog(this, skin);
 		retryDialog.show(hudStage);
-		retryDialog.setY(Constants.HEIGHT - logo.getHeight() * 1.75f - retryDialog.getHeight());
 
 		if (gameOver) {
 			retryDialog.setVisible(true);
@@ -75,10 +80,9 @@ public class GameScreen extends BaseScreen {
 		scoreLabel = new Label("0", labelStyle);
 		scoreLabel.setPosition(Constants.WIDTH / 2, Constants.HEIGHT - scoreLabel.getHeight());
 		scoreLabel.addAction(Actions.alpha(0));
-		gameOverLabel = new Label("Game Over", labelStyle);
-		gameOverLabel.setPosition(Constants.WIDTH / 2 - gameOverLabel.getWidth() / 2, retryDialog.getY() + gameOverLabel.getHeight() * 1.5f);
+		pointsLabel = new PointsLabel("", labelStyle);
 		hudStage.addActor(scoreLabel);
-		hudStage.addActor(gameOverLabel);
+		hudStage.addActor(pointsLabel);
 
 		tiles = new Array<GroundTile>();
 		temp = new Array<GroundTile>();
@@ -88,9 +92,7 @@ public class GameScreen extends BaseScreen {
 		if (gameOver) {
 			logo.getActions().clear();
 			logo.setVisible(false);
-			gameOverLabel.setVisible(true);
 		} else {
-			gameOverLabel.setVisible(false);
 		}
 	}
 
@@ -118,11 +120,6 @@ public class GameScreen extends BaseScreen {
 		dialog.setVisible(false);
 		retryDialog.setVisible(false);
 		logo.addAction(Actions.sequence(Actions.alpha(0, 0.3f), new VisibleAction(logo, false)));
-		gameOverLabel.addAction(Actions.sequence(Actions.alpha(0, 0.3f), new VisibleAction(gameOverLabel, false)));
-		addTiles(Constants.SCLWIDTH / 2 - 3.09f / 4, true);
-
-		puck = new Puck(tiles.get(0).body.getPosition().x + 0.21f, 1.83f * 1.5f, world);
-		stage.addActor(puck);
 
 		arrow = new Image(Textures.getTex("Object/arrow.png"));
 		arrow.setSize(arrow.getWidth() * Constants.SCALE, arrow.getHeight() * Constants.SCALE);
@@ -130,6 +127,11 @@ public class GameScreen extends BaseScreen {
 		flag.setSize(flag.getWidth() * Constants.SCALE, flag.getHeight() * Constants.SCALE);
 		stage.addActor(arrow);
 		stage.addActor(flag);
+
+		addTiles(Constants.SCLWIDTH / 2 - 3.09f / 4, true);
+
+		puck = new Puck(tiles.get(0).body.getPosition().x + 0.21f, 1.83f * 1.5f, world);
+		stage.addActor(puck);
 
 		arrow.setPosition(puck.getX() + puck.getWidth() / 2 - arrow.getWidth() / 2, puck.getY()
 				+ puck.getHeight() + arrow.getHeight() / 2);
@@ -186,6 +188,20 @@ public class GameScreen extends BaseScreen {
 		temp.clear();
 		camX += totalWidth;
 		totalWidth = 0;
+
+		int end = 0;
+		for (int i = 0; i < tiles.size; i++) {
+			if (tiles.get(i).type == GroundTile.TileType.MUD) {
+				end = i;
+			}
+		}
+
+		lastFlagX = flag.getX();
+		flag.setPosition(
+				tiles.get(end).body.getPosition().x
+						+ MathUtils.random(0.1f, (tiles.size - 1 - end)
+								* tiles.get(tiles.size - 1).getWidth()), tiles.get(end).getHeight());
+
 	}
 
 	public float lastTileX() {
@@ -195,6 +211,10 @@ public class GameScreen extends BaseScreen {
 	public void gameOver() {
 		if (!gameOver) {
 			gameOver = true;
+			if (score > Prefs.prefs.getInteger("highscore")) {
+				Prefs.prefs.putInteger("highscore", score);
+				Prefs.prefs.flush();
+			}
 			game.setScreen(new GameScreen(game, true));
 		}
 	}
@@ -241,10 +261,24 @@ public class GameScreen extends BaseScreen {
 
 		hudStage.draw();
 
+		if (Gdx.input.isKeyPressed(Keys.A)) {
+			puck.body.setLinearVelocity(-1, 0);
+		}
+		if (Gdx.input.isKeyPressed(Keys.D)) {
+			puck.body.setLinearVelocity(1, 0);
+		}
+
+// if (puck != null) {
+// Vector3 position = new Vector3(puck.getX() + puck.getWidth() / 2
+// - pointsLabel.getWidth() / 2, puck.getY() + puck.getHeight() * 3, 0);
+// camera.project(position);
+// pointsLabel.setPosition(position.x, position.y);
+// }
 		if (inGameMode) {
 			arrow.setY(puck.getY() + puck.getHeight() + arrow.getHeight() / 2);
 
 			if (powerBar.launched) {
+				pointsLabel.applied = false;
 				for (int i = 0; i < tiles.size; i++) {
 					if (tiles.get(i).type == GroundTile.TileType.MUD) {
 						lastMudTile = i;
@@ -253,7 +287,7 @@ public class GameScreen extends BaseScreen {
 			}
 
 			if (powerBar.check) {
-				if (puck.getX() + 0.06f < tiles.get(lastMudTile).getX()
+				if (puck.body.getPosition().x < tiles.get(lastMudTile).getX()
 						+ tiles.get(lastMudTile).getWidth()) {
 					gameOver();
 				}
@@ -261,13 +295,41 @@ public class GameScreen extends BaseScreen {
 					gameOver();
 				}
 
+				float distance = Math.abs(puck.getX() + puck.getWidth() / 2 - lastFlagX);
+
+				if (distance < 0.05f) {
+					pointsLabel.setText("+4");
+					score += 4;
+				} else if (distance < 0.15f) {
+					pointsLabel.setText("+3");
+					score += 3;
+				} else if (distance < 0.3f) {
+					pointsLabel.setText("+2");
+					score += 2;
+				} else {
+					pointsLabel.setText("+1");
+					score += 1;
+				}
+				Vector3 position = new Vector3(puck.getX() + puck.getWidth() / 2
+						- pointsLabel.getWidth() / 2, puck.getY() + puck.getHeight() * 3, 0);
+				camera.project(position);
+				pointsLabel.setPosition(position.x, position.y);
+
+				if (!pointsLabel.applied) {
+					pointsLabel.addAction(Actions.sequence(Actions.alpha(0),
+							Actions.alpha(1, 0.2f), Actions.delay(0.2f), Actions.alpha(0, 0.2f)));
+					pointsLabel.applied = true;
+				}
+
+				powerBar.check = false;
+
 			}
 
 		}
 
 		camera.update();
 
-		if (tiles.size > 0 && powerBar.check) {
+		if (tiles.size > 0) {
 			if (camera.position.x < camX) {
 				camera.position.set(camera.position.x + 0.05f, camera.position.y, 0);
 			} else {
