@@ -7,6 +7,7 @@ import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.ParticleEffect;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
+import com.badlogic.gdx.math.Interpolation;
 import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.scenes.scene2d.Action;
@@ -22,7 +23,7 @@ public class GameScreen extends BaseScreen {
 	ButtonsDialog dialog;
 	RetryDialog retryDialog;
 	Background background;
-	Image logo, arrow, flag;
+	Image logo, arrow, flag, black;
 	Label scoreLabel;
 	PointsLabel pointsLabel;
 	int score, lastMudTile, firstMudTile;
@@ -46,6 +47,8 @@ public class GameScreen extends BaseScreen {
 		listener = new GameContactListener();
 		world.setContactListener(listener);
 
+		black = new Image(Textures.getTex("black.png"));
+
 		logo = new Image(Textures.getTex("logo.png"));
 		logo.setPosition(Constants.WIDTH / 2 - logo.getWidth() / 2,
 				Constants.HEIGHT - logo.getHeight() - 20);
@@ -56,10 +59,14 @@ public class GameScreen extends BaseScreen {
 		dialog.setY(Constants.HEIGHT - logo.getHeight() * 1.75f - dialog.getHeight());
 
 		retryDialog = new RetryDialog(this, skin);
-		retryDialog.show(hudStage);
+		hudStage.addActor(retryDialog);
 
 		if (gameOver) {
 			retryDialog.setVisible(true);
+			retryDialog.addAction(Actions.sequence(Actions.moveTo(-retryDialog.getWidth(),
+					Constants.HEIGHT / 2 - retryDialog.getHeight() / 2), Actions.moveTo(
+					Constants.WIDTH / 2 - retryDialog.getWidth() / 2, Constants.HEIGHT / 2
+							- retryDialog.getHeight() / 2, 0.4f, Interpolation.exp5Out)));
 			dialog.setVisible(false);
 		} else {
 			retryDialog.setVisible(false);
@@ -131,6 +138,7 @@ public class GameScreen extends BaseScreen {
 		addTiles(Constants.SCLWIDTH / 2 - 3.09f / 4, true);
 
 		puck = new Puck(tiles.get(0).body.getPosition().x + 0.21f, 1.83f * 1.5f, world);
+
 		stage.addActor(puck);
 
 		arrow.setPosition(puck.getX() + puck.getWidth() / 2 - arrow.getWidth() / 2, puck.getY()
@@ -275,7 +283,6 @@ public class GameScreen extends BaseScreen {
 // pointsLabel.setPosition(position.x, position.y);
 // }
 		if (inGameMode) {
-			arrow.setY(puck.getY() + puck.getHeight() + arrow.getHeight() / 2);
 
 			if (powerBar.launched) {
 				pointsLabel.applied = false;
@@ -336,8 +343,14 @@ public class GameScreen extends BaseScreen {
 
 			}
 		}
+		if (puck != null && puck.body.getLinearVelocity().x == 0) {
+			arrow.setY(puck.getY() + puck.getHeight() + arrow.getHeight() / 2);
+			arrow.addAction(Actions.moveTo(
+					puck.getX() + puck.getWidth() / 2 - arrow.getWidth() / 2, arrow.getY(), 0.1f,
+					Interpolation.linear));
+
+		}
 
 		scoreLabel.setText(String.valueOf(score));
-
 	}
 }
