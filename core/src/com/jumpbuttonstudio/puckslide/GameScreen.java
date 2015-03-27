@@ -27,7 +27,7 @@ public class GameScreen extends BaseScreen {
 	Label scoreLabel;
 	PointsLabel pointsLabel;
 	int score, lastMudTile, firstMudTile;
-	float totalWidth, camX, lastSnowChange, snowChangeTime = 2f, startingX, lastFlagX;
+	float camX, lastSnowChange, snowChangeTime = 2f, startingX, lastFlagX;
 	float fadeTime = 0.1f;
 	Puck puck;
 	Array<GroundTile> tiles, temp;
@@ -160,11 +160,10 @@ public class GameScreen extends BaseScreen {
 	}
 
 	public void addTile(TileType type) {
-		if (temp.size > 1) {
+		if (temp.size >= 1) {
 			startingX += temp.get(temp.size - 1).getWidth();
 		}
 		GroundTile tile = new GroundTile(startingX, type, world);
-		totalWidth += tile.getWidth();
 		tile.addAction(Actions.sequence(Actions.alpha(0),
 				Actions.delay((temp.size - 1) * fadeTime), Actions.alpha(1, 0.3f)));
 		temp.add(tile);
@@ -181,10 +180,10 @@ public class GameScreen extends BaseScreen {
 			addTile(GroundTile.TileType.ICE_FLAT);
 		}
 
-		for (int i = 0; i < MathUtils.random(2, 4); i++) {
+		for (int i = 0; i < 2; i++) {
 			addTile(GroundTile.TileType.ICE_FLAT);
 		}
-		for (int i = 0; i < MathUtils.random(2, 4); i++) {
+		for (int i = 0; i < 2; i++) {
 			addTile(GroundTile.TileType.MUD);
 		}
 
@@ -194,15 +193,22 @@ public class GameScreen extends BaseScreen {
 			tiles.add(t);
 		}
 		temp.clear();
-		camX += totalWidth;
-		totalWidth = 0;
-
-		int end = 0;
+		int end = 0, start = 0;
 		for (int i = 0; i < tiles.size; i++) {
 			if (tiles.get(i).type == GroundTile.TileType.MUD) {
 				end = i;
 			}
 		}
+		for (int i = end; i > 0; i--) {
+			if (tiles.get(i).type == GroundTile.TileType.MUD) {
+				start = i;
+			} else {
+				start = i;
+				break;
+			}
+		}
+		
+		camX = tiles.get(start).body.getPosition().x + tiles.get(start).getWidth();
 
 		lastFlagX = flag.getX();
 		flag.setPosition(
@@ -213,7 +219,7 @@ public class GameScreen extends BaseScreen {
 	}
 
 	public float lastTileX() {
-		return tiles.get(tiles.size - 1).getX() + tiles.get(tiles.size - 1).getWidth();
+		return tiles.get(tiles.size - 2).getX() + tiles.get(tiles.size - 2).getWidth();
 	}
 
 	public void gameOver() {
@@ -245,6 +251,10 @@ public class GameScreen extends BaseScreen {
 	@Override
 	public void render(float delta) {
 		super.render(delta);
+
+		if (Gdx.input.isKeyPressed(Keys.Q)) {
+			addTiles(lastTileX(), false);
+		}
 
 		if (snow != null) {
 			snow.update(delta);
@@ -294,7 +304,7 @@ public class GameScreen extends BaseScreen {
 			}
 
 			if (powerBar.check) {
-				if (puck.body.getPosition().x < tiles.get(lastMudTile).getX()
+				if (puck.getX() + 0.06f < tiles.get(lastMudTile).getX()
 						+ tiles.get(lastMudTile).getWidth()) {
 					gameOver();
 				}

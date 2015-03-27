@@ -30,8 +30,8 @@ public class Puck extends Image {
 		PolygonShape shape = new PolygonShape();
 		shape.setAsBox(0.29f / 2, getHeight() / 2);
 		fd.shape = shape;
-		fd.density = 1.0f;
-		fd.friction = 0.5f;
+		fd.density = 0.5f;
+		fd.friction = 1.0f;
 		body.createFixture(fd);
 		body.setUserData(new UserData("puck", this));
 

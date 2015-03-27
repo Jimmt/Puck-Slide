@@ -14,8 +14,8 @@ public class GroundTile extends Image {
 	TileType type;
 
 	enum TileType {
-		MUD("Tiles/02.png", 0.5f), ICE_FLAT("Tiles/01.png", 0.15f), ICE_LEFT("Tiles/00.png", 0.15f), ICE_RIGHT(
-				"Tiles/03.png", 0.15f);
+		MUD("Tiles/02.png", 1.0f), ICE_FLAT("Tiles/01.png", 0.4f), ICE_LEFT("Tiles/00.png", 0.4f), ICE_RIGHT(
+				"Tiles/03.png", 0.75f);
 
 		private String path;
 		private float friction;
@@ -35,7 +35,7 @@ public class GroundTile extends Image {
 
 		BodyDef bd = new BodyDef();
 		bd.type = BodyType.StaticBody;
-		bd.position.set(x - getWidth() / 2, getHeight() / 2);
+		bd.position.set(x + getWidth() / 2, getHeight() / 2);
 		body = world.createBody(bd);
 		FixtureDef fd = new FixtureDef();
 		fd.friction = type.friction;
