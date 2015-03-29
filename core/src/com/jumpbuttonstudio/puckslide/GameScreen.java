@@ -23,7 +23,8 @@ public class GameScreen extends BaseScreen {
 	ButtonsDialog dialog;
 	RetryDialog retryDialog;
 	Background background;
-	Image logo, arrow, flag, black;
+	Image logo, arrow, black;
+	Flag flag;
 	Label scoreLabel;
 	PointsLabel pointsLabel;
 	int score, lastMudTile, firstMudTile;
@@ -130,7 +131,7 @@ public class GameScreen extends BaseScreen {
 
 		arrow = new Image(Textures.getTex("Object/arrow.png"));
 		arrow.setSize(arrow.getWidth() * Constants.SCALE, arrow.getHeight() * Constants.SCALE);
-		flag = new Image(Textures.getTex("Object/flag.png"));
+		flag = new Flag();
 		flag.setSize(flag.getWidth() * Constants.SCALE, flag.getHeight() * Constants.SCALE);
 		stage.addActor(arrow);
 		stage.addActor(flag);

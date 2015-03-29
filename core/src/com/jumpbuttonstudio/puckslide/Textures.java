@@ -22,16 +22,4 @@ public class Textures {
 		}
 	}
 
-	public static Texture getRepeatingTex(String path) {
-
-		if (cache.containsKey(path)) {
-			return cache.get(path);
-		} else {
-			Texture tex = new Texture(Gdx.files.internal(path));
-			tex.setFilter(TextureFilter.Linear, TextureFilter.Linear);
-			tex.setWrap(TextureWrap.Repeat, TextureWrap.Repeat);
-			cache.put(path, tex);
-			return tex;
-		}
-	}
 }

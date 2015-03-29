@@ -83,37 +83,40 @@ public class CloudLayer extends Actor {
 		}
 
 		if (speed > 0 && clouds.get(clouds.size - 1).getX() > leftBoundX) {
-			if (clouds.size < 3) {
+//			if (clouds.size < 3) {
 				Image cloud = new Image(Textures.getTex("Background/clouds.png"));
 				cloud.setSize(cloud.getWidth() / 100f, cloud.getHeight() / 100f);
 				cloud.setPosition(clouds.get(clouds.size - 1).getX()
 						- clouds.get(clouds.size - 1).getWidth(), offsetY - 0.26f);
 				clouds.add(cloud);
-			} else {
-				clouds.insert(0, clouds.get(clouds.size - 1));
-				clouds.get(0)
-						.setPosition(
-								clouds.get(clouds.size - 1).getX()
-										- clouds.get(clouds.size - 1).getWidth(), offsetY - 0.26f);
-				clouds.removeIndex(clouds.size - 1);
-			}
+//			} else {
+//				clouds.insert(0, clouds.get(clouds.size - 1));
+//				clouds.get(0)
+//						.setPosition(
+//								clouds.get(clouds.size - 1).getX()
+//										- clouds.get(clouds.size - 1).getWidth(), offsetY - 0.26f);
+//				clouds.removeIndex(clouds.size - 1);
+//			}
 		}
+		
+		new Image(Textures.getTex("Background/clouds.png"));
+		
 
 		if (speed < 0
 				&& clouds.get(clouds.size - 1).getX() + clouds.get(0).getWidth() < rightBoundX) {
-			if(clouds.size < 3){
+//			if(clouds.size < 3){
 			Image cloud = new Image(Textures.getTex("Background/clouds.png"));
 			cloud.setSize(cloud.getWidth() / 100f, cloud.getHeight() / 100f);
 			cloud.setPosition(clouds.get(clouds.size - 1).getX() + clouds.get(0).getWidth(),
 					offsetY - 0.26f);
-			} else {
-				clouds.insert(clouds.size - 1, clouds.get(0));
-				clouds.get(clouds.size - 1)
-						.setPosition(
-								clouds.get(0).getX()
-										+ clouds.get(0).getWidth(), offsetY - 0.26f);
-				clouds.removeIndex(0);
-			}
+//			} else {
+//				clouds.insert(clouds.size - 1, clouds.get(0));
+//				clouds.get(clouds.size - 1)
+//						.setPosition(
+//								clouds.get(0).getX()
+//										+ clouds.get(0).getWidth(), offsetY - 0.26f);
+//				clouds.removeIndex(0);
+//			}
 		}
 
 	}
