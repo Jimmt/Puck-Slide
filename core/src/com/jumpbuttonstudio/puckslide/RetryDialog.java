@@ -15,12 +15,12 @@ import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
 
 public class RetryDialog extends Dialog {
 	ImageButton retry;
-	Label scoreLabel, gameOverLabel, highScoreLabel;
+	Label scoreLabel, highScoreLabel;
 
 	public RetryDialog(final GameScreen gameScreen, Skin skin) {
 		super("", skin);
 
-		Image panel = new Image(Textures.getTex("UI/panel.png"));
+		Image panel = new Image(Textures.getTex("UI/gameover.png"));
 
 		background(panel.getDrawable());
 
@@ -35,9 +35,8 @@ public class RetryDialog extends Dialog {
 		labelStyle.font = new BitmapFont(Gdx.files.internal("Font/font.fnt"));
 		labelStyle.fontColor = Color.WHITE;
 
-		scoreLabel = new Label("Score: " + gameScreen.score, labelStyle);
-		gameOverLabel = new Label("Game Over", labelStyle);
-		highScoreLabel = new Label("High Score: " + Prefs.prefs.getInteger("highscore"), labelStyle);
+		scoreLabel = new Label("" + gameScreen.score, labelStyle);
+		highScoreLabel = new Label("" + Prefs.prefs.getInteger("highscore"), labelStyle);
 
 		retry = new ImageButton(retryStyle);
 		retry.addListener(new ClickListener() {
@@ -48,11 +47,9 @@ public class RetryDialog extends Dialog {
 			}
 		});
 
-		getContentTable().add(gameOverLabel);
+		getContentTable().add(scoreLabel).padTop(64f);
 		getContentTable().row();
-		getContentTable().add(scoreLabel);
-		getContentTable().row();
-		getContentTable().add(highScoreLabel);
+		getContentTable().add(highScoreLabel).padTop(12f);
 		getContentTable().row();
 		getContentTable().add(retry);
 	}

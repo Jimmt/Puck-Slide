@@ -180,10 +180,10 @@ public class GameScreen extends BaseScreen {
 			addTile(GroundTile.TileType.ICE_FLAT);
 		}
 
-		for (int i = 0; i < 2; i++) {
+		for (int i = 0; i < MathUtils.random(2, 4); i++) {
 			addTile(GroundTile.TileType.ICE_FLAT);
 		}
-		for (int i = 0; i < 2; i++) {
+		for (int i = 0; i < MathUtils.random(2, 4); i++) {
 			addTile(GroundTile.TileType.MUD);
 		}
 
@@ -207,12 +207,14 @@ public class GameScreen extends BaseScreen {
 				break;
 			}
 		}
-		
+
 		camX = tiles.get(start).body.getPosition().x + tiles.get(start).getWidth();
 
 		lastFlagX = flag.getX();
 		flag.setPosition(
 				tiles.get(end).body.getPosition().x
+						+ tiles.get(end).getWidth()
+						/ 2
 						+ MathUtils.random(0.1f, (tiles.size - 1 - end)
 								* tiles.get(tiles.size - 1).getWidth()), tiles.get(end).getHeight());
 

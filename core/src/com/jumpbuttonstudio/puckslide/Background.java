@@ -53,7 +53,9 @@ public class Background extends Actor {
 			cloudLayers.add(cloudLayer);
 		}
 
-// cloudLayers.reverse();
+
+// CloudLayer cloudLayer = new CloudLayer(camera, 0, 0, 0);
+// cloudLayers.add(cloudLayer);
 
 	}
 
