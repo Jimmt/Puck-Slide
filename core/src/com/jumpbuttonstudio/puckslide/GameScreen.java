@@ -43,6 +43,12 @@ public class GameScreen extends BaseScreen {
 
 		Prefs.init();
 
+		if (!gameOver) {
+			PuckSlide.soundManager.musics.get("menu").setLooping(true);
+			PuckSlide.soundManager.musics.get("ingame").setLooping(true);
+			PuckSlide.soundManager.playMusic("menu", 0.2f);
+		}
+
 		this.gameOver = gameOver;
 
 		listener = new GameContactListener();
@@ -122,6 +128,10 @@ public class GameScreen extends BaseScreen {
 	}
 
 	public void enterGameMode() {
+		if (!PuckSlide.soundManager.musics.get("ingame").isPlaying()) {
+			PuckSlide.soundManager.playMusic("ingame", 0.15f);
+		}
+
 		inGameMode = true;
 		scoreLabel.addAction(Actions.sequence(Actions.alpha(1, 0.3f), new VisibleAction(scoreLabel,
 				true)));
@@ -227,7 +237,9 @@ public class GameScreen extends BaseScreen {
 
 	public void gameOver() {
 		if (!gameOver) {
+			PuckSlide.soundManager.play("lose");
 			gameOver = true;
+			PuckSlide.services.submitScore(score);
 			if (score > Prefs.prefs.getInteger("highscore")) {
 				Prefs.prefs.putInteger("highscore", score);
 				Prefs.prefs.flush();
@@ -282,12 +294,6 @@ public class GameScreen extends BaseScreen {
 
 		hudStage.draw();
 
-		if (Gdx.input.isKeyPressed(Keys.A)) {
-			puck.body.setLinearVelocity(-1, 0);
-		}
-		if (Gdx.input.isKeyPressed(Keys.D)) {
-			puck.body.setLinearVelocity(1, 0);
-		}
 
 // if (puck != null) {
 // Vector3 position = new Vector3(puck.getX() + puck.getWidth() / 2
@@ -330,6 +336,11 @@ public class GameScreen extends BaseScreen {
 					pointsLabel.setText("+1");
 					score += 1;
 				}
+
+				if (!gameOver) {
+					PuckSlide.soundManager.play("success", 0.2f);
+				}
+
 				Vector3 position = new Vector3(puck.getX() + puck.getWidth() / 2
 						- pointsLabel.getWidth() / 2, puck.getY() + puck.getHeight() * 3, 0);
 				camera.project(position);
@@ -359,7 +370,7 @@ public class GameScreen extends BaseScreen {
 		if (puck != null && puck.body.getLinearVelocity().x == 0) {
 			arrow.setY(puck.getY() + puck.getHeight() + arrow.getHeight() / 2);
 			arrow.addAction(Actions.moveTo(
-					puck.getX() + puck.getWidth() / 2 - arrow.getWidth() / 2, arrow.getY(), 0.1f,
+					puck.getX() + puck.getWidth() / 2 - arrow.getWidth() / 2, arrow.getY(), 0.2f,
 					Interpolation.linear));
 
 		}

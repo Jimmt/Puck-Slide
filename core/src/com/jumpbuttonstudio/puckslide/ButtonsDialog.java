@@ -30,6 +30,7 @@ public class ButtonsDialog extends Dialog {
 		play = new ImageButton(style);
 		play.addListener(new ClickListener() {
 			public void clicked(InputEvent event, float x, float y) {
+				PuckSlide.soundManager.play("button", 0.2f);
 				if (!gameScreen.inGameMode) {
 					gameScreen.enterGameMode();
 				}

@@ -36,7 +36,7 @@ public class Flag extends Actor {
 	public void draw(Batch batch, float parentAlpha) {
 		super.draw(batch, parentAlpha);
 
-		batch.draw(anim.getKeyFrame(stateTime), getX(), getY() - 0.17f, 0, 0, 64, 64, Constants.SCALE,
+		batch.draw(anim.getKeyFrame(stateTime), getX() - 0.2f, getY() - 0.17f, 0, 0, 64, 64, Constants.SCALE,
 				Constants.SCALE, 0);
 
 	}

@@ -41,6 +41,8 @@ public class RetryDialog extends Dialog {
 		retry = new ImageButton(retryStyle);
 		retry.addListener(new ClickListener() {
 			public void clicked(InputEvent event, float x, float y) {
+				PuckSlide.soundManager.play("button", 0.2f);
+
 				if (!gameScreen.inGameMode) {
 					gameScreen.enterGameMode();
 				}

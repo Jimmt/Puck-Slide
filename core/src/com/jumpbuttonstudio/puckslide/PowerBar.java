@@ -33,10 +33,13 @@ public class PowerBar extends Image implements InputProcessor {
 
 		barBG.act(delta);
 		bar.act(delta);
+		
+	
 
 		if (startTime) {
 			check = false;
 			barX = Math.min(getX() + (timeDown / timeMax) * getWidth(), getX() + getWidth() - 8);
+			gameScreen.camera.zoom = 1 - (timeDown / timeMax) * 0.25f;
 			bar.addAction(Actions.alpha(1));
 			timeDown += delta;
 		} else {
@@ -49,12 +52,13 @@ public class PowerBar extends Image implements InputProcessor {
 			timeDown = 0;
 			barX = getX() + 8;
 			bar.addAction(Actions.alpha(0));
+			gameScreen.camera.zoom = 1;
 		}
 		if (launched) {
+			
 			if (launchTime > timeCap) {
 				launchTime = 0;
 				gameScreen.addTiles(gameScreen.lastTileX(), false);
-
 				launched = false;
 				check = true;
 			} else {
@@ -105,7 +109,7 @@ public class PowerBar extends Image implements InputProcessor {
 	@Override
 	public boolean touchUp(int screenX, int screenY, int pointer, int button) {
 		startTime = false;
-
+		PuckSlide.soundManager.play("puckhit");
 		return false;
 	}
 
