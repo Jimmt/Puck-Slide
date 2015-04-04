@@ -6,16 +6,20 @@ import com.badlogic.gdx.InputMultiplexer;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.ParticleEffect;
-import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.math.Interpolation;
 import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.scenes.scene2d.Action;
 import com.badlogic.gdx.scenes.scene2d.Actor;
+import com.badlogic.gdx.scenes.scene2d.InputEvent;
 import com.badlogic.gdx.scenes.scene2d.actions.Actions;
 import com.badlogic.gdx.scenes.scene2d.ui.Image;
+import com.badlogic.gdx.scenes.scene2d.ui.ImageButton;
+import com.badlogic.gdx.scenes.scene2d.ui.ImageButton.ImageButtonStyle;
 import com.badlogic.gdx.scenes.scene2d.ui.Label;
 import com.badlogic.gdx.scenes.scene2d.ui.Label.LabelStyle;
+import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
+import com.badlogic.gdx.scenes.scene2d.utils.TextureRegionDrawable;
 import com.badlogic.gdx.utils.Array;
 import com.jumpbuttonstudio.puckslide.GroundTile.TileType;
 
@@ -37,8 +41,9 @@ public class GameScreen extends BaseScreen {
 	PowerBar powerBar;
 	ParticleEffect snow;
 	GameContactListener listener;
+	ImageButton home, sound;
 
-	public GameScreen(PuckSlide game, int score, boolean gameOver) {
+	public GameScreen(final PuckSlide game, int score, boolean gameOver) {
 		super(game);
 
 		Prefs.init();
@@ -56,7 +61,7 @@ public class GameScreen extends BaseScreen {
 
 		black = new Image(Textures.getTex("black.png"));
 
-		logo = new Image(Textures.getTex("logo.png"));
+		logo = new Image(Textures.getTex("Icon/logo.png"));
 		logo.setPosition(Constants.WIDTH / 2 - logo.getWidth() / 2,
 				Constants.HEIGHT - logo.getHeight() - 20);
 		hudStage.addActor(logo);
@@ -67,6 +72,47 @@ public class GameScreen extends BaseScreen {
 
 		retryDialog = new RetryDialog(this, score, skin);
 		hudStage.addActor(retryDialog);
+
+		ImageButtonStyle homeStyle = new ImageButtonStyle();
+		homeStyle.up = new Image(Textures.getTex("Icon/home_360.png")).getDrawable();
+		ImageButtonStyle soundStyle = new ImageButtonStyle();
+		soundStyle.imageChecked = new Image(Textures.getTex("Icon/soundon_360.png")).getDrawable();
+		soundStyle.up = new Image(Textures.getTex("Icon/soundoff_360.png")).getDrawable();
+		float x = (Constants.WIDTH + (logo.getX() + logo.getWidth())) / 2;
+		home = new ImageButton(homeStyle);
+		home.setSize(home.getWidth() * 0.5f, home.getHeight() * 0.5f);
+		home.setPosition(x - home.getWidth() / 2 + home.getWidth() / 1.5f,
+				Constants.HEIGHT - home.getHeight() * 2);
+		sound = new ImageButton(soundStyle);
+		sound.setChecked(Prefs.prefs.getBoolean("sound"));
+		sound.setSize(sound.getWidth() * 0.5f, sound.getHeight() * 0.5f);
+		sound.setPosition(x - sound.getWidth() / 2 - sound.getWidth() / 1.5f, home.getY());
+		home.addListener(new ClickListener() {
+			public void clicked(InputEvent event, float x, float y) {
+				PuckSlide.soundManager.play("button", 0.2f);
+
+				if (!dialog.isVisible()) {
+					game.setScreen(new GameScreen(game, 0, false));
+				}
+			}
+		});
+		sound.addListener(new ClickListener() {
+			public void clicked(InputEvent event, float x, float y) {
+				Prefs.prefs.putBoolean("sound", sound.isChecked());
+				Prefs.prefs.flush();
+				PuckSlide.soundManager.setPlay(sound.isChecked());
+
+				if (sound.isChecked()) {
+					if (retryDialog.isVisible() || dialog.isVisible()) {
+						PuckSlide.soundManager.playMusic("menu", 0.2f);
+					} else {
+						PuckSlide.soundManager.playMusic("ingame", 0.2f);
+					}
+				}
+			}
+		});
+		hudStage.addActor(home);
+		hudStage.addActor(sound);
 
 		if (gameOver) {
 			retryDialog.setVisible(true);
@@ -311,16 +357,17 @@ public class GameScreen extends BaseScreen {
 				}
 			}
 
+			if (puck.getY() < tiles.get(0).getY() + tiles.get(0).getHeight() - 1.0f) {
+				gameOver();
+			}
+
 			if (powerBar.check) {
 				arrowX = puck.getX() + puck.getWidth() / 2 - arrow.getWidth() / 2;
 				arrow.getActions().clear();
 				arrow.addAction(Actions.moveTo(arrowX, arrow.getY(), 0.3f));
-			
+
 				if (puck.getX() + 0.06f < tiles.get(lastMudTile).getX()
 						+ tiles.get(lastMudTile).getWidth()) {
-					gameOver();
-				}
-				if (puck.getY() < tiles.get(0).getY() + tiles.get(0).getHeight()) {
 					gameOver();
 				}
 
@@ -379,8 +426,6 @@ public class GameScreen extends BaseScreen {
 					Actions.moveTo(arrow.getX(), puck.getY() + puck.getHeight() + arrow.getHeight()
 							/ 2, 0.5f)));
 		}
-		
-		
 
 // if (puck != null && puck.body.getLinearVelocity().x == 0) {
 // // arrow.setY(puck.getY() + puck.getHeight() + arrow.getHeight() / 2);

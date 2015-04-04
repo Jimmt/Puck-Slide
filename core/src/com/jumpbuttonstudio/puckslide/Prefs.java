@@ -11,7 +11,16 @@ public class Prefs {
 
 		if (!prefs.contains("highscore")) {
 			prefs.putInteger("highscore", 0);
+
 		}
+
+		if (!prefs.contains("sound")) {
+			prefs.putBoolean("sound", true);
+		} else {
+			PuckSlide.soundManager.setPlay(prefs.getBoolean("sound"));
+
+		}
+		prefs.flush();
 
 	}
 }

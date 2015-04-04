@@ -78,6 +78,13 @@ public class SoundManager {
 
 	public void setPlay(boolean play) {
 		this.play = play;
+
+		if (!play) {
+			Entries<String, Music> entries = musics.entries();
+			while (entries.hasNext()) {
+				entries.next().value.stop();
+			}
+		}
 	}
 
 	public boolean getPlay() {

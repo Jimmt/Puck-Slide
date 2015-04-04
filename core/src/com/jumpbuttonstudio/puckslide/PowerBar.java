@@ -38,10 +38,10 @@ public class PowerBar extends Image implements InputProcessor {
 
 		if (startTime) {
 			check = false;
-			barX = Math.min(getX() + (timeDown / timeMax) * getWidth(), getX() + getWidth() - 8);
-			if (barX < getX() + getWidth() - 8) {
-				Vector2 dir = new Vector2(gameScreen.camera.position.x - gameScreen.puck.getX(),
-						gameScreen.camera.position.y - gameScreen.puck.getY());
+
+			barX = getX() + (timeDown % timeMax) * getWidth();
+			if (timeDown < timeMax) {
+
 				gameScreen.camera.zoom = 1 - (timeDown / timeMax) * 0.25f;
 				if (!set) {
 					set = true;
@@ -59,7 +59,7 @@ public class PowerBar extends Image implements InputProcessor {
 
 			if (barX > getX() + 8) {
 
-				puck.body.applyForceToCenter(4 + (timeDown / timeMax) * 6, 0, false);
+				puck.body.applyForceToCenter(4 + (timeDown % timeMax) * 6, 0, false);
 				launched = true;
 			}
 			timeDown = 0;
