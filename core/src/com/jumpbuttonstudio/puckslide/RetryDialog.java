@@ -17,7 +17,7 @@ public class RetryDialog extends Dialog {
 	ImageButton retry;
 	Label scoreLabel, highScoreLabel;
 
-	public RetryDialog(final GameScreen gameScreen, Skin skin) {
+	public RetryDialog(final GameScreen gameScreen, int score, Skin skin) {
 		super("", skin);
 
 		Image panel = new Image(Textures.getTex("UI/gameover.png"));
@@ -35,7 +35,7 @@ public class RetryDialog extends Dialog {
 		labelStyle.font = new BitmapFont(Gdx.files.internal("Font/font.fnt"));
 		labelStyle.fontColor = Color.WHITE;
 
-		scoreLabel = new Label("" + gameScreen.score, labelStyle);
+		scoreLabel = new Label("" + score, labelStyle);
 		highScoreLabel = new Label("" + Prefs.prefs.getInteger("highscore"), labelStyle);
 
 		retry = new ImageButton(retryStyle);

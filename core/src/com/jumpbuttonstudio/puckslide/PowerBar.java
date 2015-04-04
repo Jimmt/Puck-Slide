@@ -1,8 +1,8 @@
 package com.jumpbuttonstudio.puckslide;
 
-import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.InputProcessor;
 import com.badlogic.gdx.graphics.g2d.Batch;
+import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.scenes.scene2d.actions.Actions;
 import com.badlogic.gdx.scenes.scene2d.ui.Image;
 
@@ -11,6 +11,8 @@ public class PowerBar extends Image implements InputProcessor {
 	boolean startTime, launched, check;
 	float timeDown, timeMax = 1.0f;
 	float launchTime, timeCap = 2f;
+	float originalCamX, finalCamX;
+	boolean set;
 	float barX;
 	Image barBG, bar;
 	Puck puck;
@@ -33,13 +35,24 @@ public class PowerBar extends Image implements InputProcessor {
 
 		barBG.act(delta);
 		bar.act(delta);
-		
-	
 
 		if (startTime) {
 			check = false;
 			barX = Math.min(getX() + (timeDown / timeMax) * getWidth(), getX() + getWidth() - 8);
-			gameScreen.camera.zoom = 1 - (timeDown / timeMax) * 0.25f;
+			if (barX < getX() + getWidth() - 8) {
+				Vector2 dir = new Vector2(gameScreen.camera.position.x - gameScreen.puck.getX(),
+						gameScreen.camera.position.y - gameScreen.puck.getY());
+				gameScreen.camera.zoom = 1 - (timeDown / timeMax) * 0.25f;
+				if (!set) {
+					set = true;
+					originalCamX = gameScreen.camera.position.x;
+				}
+
+				finalCamX = gameScreen.camera.position.x;
+			}
+			gameScreen.camera.position.set(Math.max(
+					gameScreen.puck.getX() + gameScreen.puck.getWidth(),
+					gameScreen.camera.position.x - 0.06f), gameScreen.camera.position.y, 0);
 			bar.addAction(Actions.alpha(1));
 			timeDown += delta;
 		} else {
@@ -50,17 +63,19 @@ public class PowerBar extends Image implements InputProcessor {
 				launched = true;
 			}
 			timeDown = 0;
+			set = false;
 			barX = getX() + 8;
 			bar.addAction(Actions.alpha(0));
 			gameScreen.camera.zoom = 1;
 		}
 		if (launched) {
-			
+
 			if (launchTime > timeCap) {
 				launchTime = 0;
 				gameScreen.addTiles(gameScreen.lastTileX(), false);
 				launched = false;
 				check = true;
+
 			} else {
 				launchTime += delta;
 			}

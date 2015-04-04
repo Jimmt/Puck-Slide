@@ -29,7 +29,7 @@ public class GameScreen extends BaseScreen {
 	PointsLabel pointsLabel;
 	int score, lastMudTile, firstMudTile;
 	float camX, lastSnowChange, snowChangeTime = 2f, startingX, lastFlagX;
-	float fadeTime = 0.1f;
+	float fadeTime = 0.1f, arrowX;
 	Puck puck;
 	Array<GroundTile> tiles, temp;
 	InputMultiplexer multiplexer;
@@ -38,7 +38,7 @@ public class GameScreen extends BaseScreen {
 	ParticleEffect snow;
 	GameContactListener listener;
 
-	public GameScreen(PuckSlide game, boolean gameOver) {
+	public GameScreen(PuckSlide game, int score, boolean gameOver) {
 		super(game);
 
 		Prefs.init();
@@ -65,7 +65,7 @@ public class GameScreen extends BaseScreen {
 		dialog.show(hudStage);
 		dialog.setY(Constants.HEIGHT - logo.getHeight() * 1.75f - dialog.getHeight());
 
-		retryDialog = new RetryDialog(this, skin);
+		retryDialog = new RetryDialog(this, score, skin);
 		hudStage.addActor(retryDialog);
 
 		if (gameOver) {
@@ -148,13 +148,13 @@ public class GameScreen extends BaseScreen {
 
 		addTiles(Constants.SCLWIDTH / 2 - 3.09f / 4, true);
 
-		puck = new Puck(tiles.get(0).body.getPosition().x + 0.21f, 1.83f * 1.5f, world);
+		puck = new Puck(tiles.get(0).body.getPosition().x + 0.21f, 1.9f, world);
 
 		stage.addActor(puck);
 
 		arrow.setPosition(puck.getX() + puck.getWidth() / 2 - arrow.getWidth() / 2, puck.getY()
 				+ puck.getHeight() + arrow.getHeight() / 2);
-
+		arrowX = puck.getX() + puck.getWidth() / 2 - arrow.getWidth() / 2;
 		powerBar = new PowerBar(puck, this);
 		powerBar.setPosition(Constants.WIDTH / 2 - powerBar.getWidth() / 2, powerBar.getHeight());
 		hudStage.addActor(powerBar);
@@ -244,7 +244,7 @@ public class GameScreen extends BaseScreen {
 				Prefs.prefs.putInteger("highscore", score);
 				Prefs.prefs.flush();
 			}
-			game.setScreen(new GameScreen(game, true));
+			game.setScreen(new GameScreen(game, score, true));
 		}
 	}
 
@@ -294,7 +294,6 @@ public class GameScreen extends BaseScreen {
 
 		hudStage.draw();
 
-
 // if (puck != null) {
 // Vector3 position = new Vector3(puck.getX() + puck.getWidth() / 2
 // - pointsLabel.getWidth() / 2, puck.getY() + puck.getHeight() * 3, 0);
@@ -313,6 +312,10 @@ public class GameScreen extends BaseScreen {
 			}
 
 			if (powerBar.check) {
+				arrowX = puck.getX() + puck.getWidth() / 2 - arrow.getWidth() / 2;
+				arrow.getActions().clear();
+				arrow.addAction(Actions.moveTo(arrowX, arrow.getY(), 0.3f));
+			
 				if (puck.getX() + 0.06f < tiles.get(lastMudTile).getX()
 						+ tiles.get(lastMudTile).getWidth()) {
 					gameOver();
@@ -367,13 +370,25 @@ public class GameScreen extends BaseScreen {
 
 			}
 		}
-		if (puck != null && puck.body.getLinearVelocity().x == 0) {
-			arrow.setY(puck.getY() + puck.getHeight() + arrow.getHeight() / 2);
-			arrow.addAction(Actions.moveTo(
-					puck.getX() + puck.getWidth() / 2 - arrow.getWidth() / 2, arrow.getY(), 0.2f,
-					Interpolation.linear));
 
+		if (arrow != null && arrow.getActions().size == 0) {
+
+			arrow.addAction(Actions.sequence(
+					Actions.moveTo(arrow.getX(), puck.getY() + puck.getHeight() + arrow.getHeight()
+							/ 2 + 0.3f, 0.5f),
+					Actions.moveTo(arrow.getX(), puck.getY() + puck.getHeight() + arrow.getHeight()
+							/ 2, 0.5f)));
 		}
+		
+		
+
+// if (puck != null && puck.body.getLinearVelocity().x == 0) {
+// // arrow.setY(puck.getY() + puck.getHeight() + arrow.getHeight() / 2);
+// arrow.addAction(Actions.moveTo(
+// puck.getX() + puck.getWidth() / 2 - arrow.getWidth() / 2, arrow.getY(), 0.2f,
+// Interpolation.linear));
+//
+// }
 
 		scoreLabel.setText(String.valueOf(score));
 	}

@@ -49,7 +49,7 @@ public class Background extends Actor {
 
 		for (int i = (int) distance; i >= 0; i--) {
 			CloudLayer cloudLayer = new CloudLayer(camera, -MathUtils.random(3), i == 0 ? 0 : (i
-					* (cloudHeight / 3 * 2) + MathUtils.random(0.1f) - 0.05f) - 0.4f, i / distance);
+					* (cloudHeight / 3 * 2) + MathUtils.random(0.1f) - 0.05f) - 0.15f, i / distance);
 			cloudLayers.add(cloudLayer);
 		}
 
@@ -102,7 +102,7 @@ public class Background extends Actor {
 			Image mountain = new Image(Textures.getTex("Background/Montfront.png"));
 			mountain.setSize(mountain.getWidth() / 100f, mountain.getHeight() / 100f);
 			mountain.setPosition(nextMountain,
-					Constants.SCLHEIGHT - cloudHeight - mountain.getHeight() / 4f - 0.01f);
+					Constants.SCLHEIGHT - cloudHeight - mountain.getHeight() / 4f);
 			lastOffset = MathUtils.random(4, 5);
 			nextMountain += lastOffset;
 			mountains.add(mountain);
@@ -112,7 +112,7 @@ public class Background extends Actor {
 			Image mountain = new Image(Textures.getTex("Background/Montback.png"));
 			mountain.setSize(mountain.getWidth() / 100f, mountain.getHeight() / 100f);
 			mountain.setPosition(nextBackMountain,
-					Constants.SCLHEIGHT - cloudHeight - mountain.getHeight() / 4f - 0.01f);
+					Constants.SCLHEIGHT - cloudHeight - mountain.getHeight() / 4f);
 
 			nextBackMountain += lastOffset + MathUtils.random(2) - 1f;
 			backMountains.add(mountain);

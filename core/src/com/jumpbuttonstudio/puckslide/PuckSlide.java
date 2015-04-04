@@ -10,13 +10,17 @@ import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 public class PuckSlide extends Game {
 	public static SoundManager soundManager;
 	public static IGoogleServices services;
-	
-	public PuckSlide(IGoogleServices services){
+
+	public static boolean DEBUG = true;
+
+	public PuckSlide(IGoogleServices services) {
 		PuckSlide.services = services;
 	}
 
 	@Override
 	public void create() {
+
+//		DEBUG = false;
 
 		soundManager = new SoundManager();
 		soundManager.loadSound("button", Gdx.files.internal("SFX/Button.wav"));
@@ -29,7 +33,10 @@ public class PuckSlide extends Game {
 		soundManager.loadMusic("menu", Gdx.files.internal("SFX/Mainmenu.mp3"));
 		soundManager.loadMusic("ingame", Gdx.files.internal("SFX/Ingame.mp3"));
 
-		setScreen(new GameScreen(this, false));
+		soundManager.setPlay(!DEBUG);
+
+		setScreen(new GameScreen(this, 0, false));
+
 	}
 
 }
