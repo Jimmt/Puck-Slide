@@ -2,7 +2,7 @@ package com.jumpbuttonstudio.puckslide;
 
 import com.badlogic.gdx.InputProcessor;
 import com.badlogic.gdx.graphics.g2d.Batch;
-import com.badlogic.gdx.math.Vector2;
+import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.scenes.scene2d.actions.Actions;
 import com.badlogic.gdx.scenes.scene2d.ui.Image;
 
@@ -12,7 +12,7 @@ public class PowerBar extends Image implements InputProcessor {
 	float timeDown, timeMax = 1.0f;
 	float launchTime, timeCap = 2f;
 	float originalCamX, finalCamX;
-	boolean set;
+	boolean set, forward = true;
 	float barX;
 	Image barBG, bar;
 	Puck puck;
@@ -39,9 +39,21 @@ public class PowerBar extends Image implements InputProcessor {
 		if (startTime) {
 			check = false;
 
-			barX = getX() + (timeDown % timeMax) * getWidth();
-			if (timeDown < timeMax) {
+// if (forward) {
+// barX = getX() + (timeDown % timeMax) * getWidth();
+// if (barX > getX() + getWidth() - 8) {
+// forward = false;
+// }
+// } else {
+// barX = getX() + getWidth() - (timeDown % timeMax) * getWidth();
+// if (barX < getX() + 8) {
+// forward = true;
+// }
+// }
 
+			barX = getX() + (getWidth() - 8) * 2
+					* Math.abs((timeDown / 2) - MathUtils.floor((timeDown / 2) + 0.5f));
+			if (timeDown < timeMax) {
 				gameScreen.camera.zoom = 1 - (timeDown / timeMax) * 0.25f;
 				if (!set) {
 					set = true;
@@ -58,8 +70,8 @@ public class PowerBar extends Image implements InputProcessor {
 		} else {
 
 			if (barX > getX() + 8) {
-
-				puck.body.applyForceToCenter(4 + (timeDown % timeMax) * 6, 0, false);
+				puck.body.applyForceToCenter(4 + ((barX - getX()) / (getWidth() - 16)) * 5.5f, 0,
+						false);
 				launched = true;
 			}
 			timeDown = 0;

@@ -28,10 +28,12 @@ public class GameScreen extends BaseScreen {
 	RetryDialog retryDialog;
 	Background background;
 	Image logo, arrow, black;
+	Array<Image> compliments;
 	Flag flag;
 	Label scoreLabel;
 	PointsLabel pointsLabel;
 	int score, lastMudTile, firstMudTile;
+	int foursCombo, lastMultiple = 1;
 	float camX, lastSnowChange, snowChangeTime = 2f, startingX, lastFlagX;
 	float fadeTime = 0.1f, arrowX;
 	Puck puck;
@@ -60,7 +62,13 @@ public class GameScreen extends BaseScreen {
 		world.setContactListener(listener);
 
 		black = new Image(Textures.getTex("black.png"));
-
+		compliments = new Array<Image>();
+		for (int i = 0; i < 3; i++) {
+			Image image = new Image(Textures.getTex("Compliments/0" + i + ".png"));
+			compliments.add(image);
+			hudStage.addActor(image);
+			image.getColor().a = 0;
+		}
 		logo = new Image(Textures.getTex("Icon/logo.png"));
 		logo.setPosition(Constants.WIDTH / 2 - logo.getWidth() / 2,
 				Constants.HEIGHT - logo.getHeight() - 20);
@@ -78,15 +86,17 @@ public class GameScreen extends BaseScreen {
 		ImageButtonStyle soundStyle = new ImageButtonStyle();
 		soundStyle.imageChecked = new Image(Textures.getTex("Icon/soundon_360.png")).getDrawable();
 		soundStyle.up = new Image(Textures.getTex("Icon/soundoff_360.png")).getDrawable();
-		float x = (Constants.WIDTH + (logo.getX() + logo.getWidth())) / 2;
-		home = new ImageButton(homeStyle);
-		home.setSize(home.getWidth() * 0.5f, home.getHeight() * 0.5f);
-		home.setPosition(x - home.getWidth() / 2 + home.getWidth() / 1.5f,
-				Constants.HEIGHT - home.getHeight() * 2);
+
+		float borderSize = 10f;
 		sound = new ImageButton(soundStyle);
 		sound.setChecked(Prefs.prefs.getBoolean("sound"));
 		sound.setSize(sound.getWidth() * 0.5f, sound.getHeight() * 0.5f);
-		sound.setPosition(x - sound.getWidth() / 2 - sound.getWidth() / 1.5f, home.getY());
+		sound.setPosition(Constants.WIDTH - sound.getWidth() - borderSize,
+				Constants.HEIGHT - sound.getHeight() - borderSize);
+		home = new ImageButton(homeStyle);
+		home.setSize(home.getWidth() * 0.5f, home.getHeight() * 0.5f);
+		home.setPosition(sound.getX() - home.getWidth() - borderSize, sound.getY());
+
 		home.addListener(new ClickListener() {
 			public void clicked(InputEvent event, float x, float y) {
 				PuckSlide.soundManager.play("button", 0.2f);
@@ -112,6 +122,11 @@ public class GameScreen extends BaseScreen {
 			}
 		});
 		hudStage.addActor(home);
+		if (gameOver) {
+			home.setVisible(true);
+		} else {
+			home.setVisible(false);
+		}
 		hudStage.addActor(sound);
 
 		if (gameOver) {
@@ -313,10 +328,6 @@ public class GameScreen extends BaseScreen {
 	public void render(float delta) {
 		super.render(delta);
 
-		if (Gdx.input.isKeyPressed(Keys.Q)) {
-			addTiles(lastTileX(), false);
-		}
-
 		if (snow != null) {
 			snow.update(delta);
 			stage.getBatch().begin();
@@ -373,17 +384,21 @@ public class GameScreen extends BaseScreen {
 
 				float distance = Math.abs(puck.getX() + puck.getWidth() / 2 - lastFlagX);
 
-				if (distance < 0.05f) {
+				if (distance < 0.15f) {
 					pointsLabel.setText("+4");
+					foursCombo++;
 					score += 4;
-				} else if (distance < 0.15f) {
-					pointsLabel.setText("+3");
-					score += 3;
 				} else if (distance < 0.3f) {
+					pointsLabel.setText("+3");
+					foursCombo++;
+					score += 3;
+				} else if (distance < 0.45f) {
 					pointsLabel.setText("+2");
+					foursCombo = 0;
 					score += 2;
 				} else {
 					pointsLabel.setText("+1");
+					foursCombo = 0;
 					score += 1;
 				}
 
@@ -395,11 +410,37 @@ public class GameScreen extends BaseScreen {
 						- pointsLabel.getWidth() / 2, puck.getY() + puck.getHeight() * 3, 0);
 				camera.project(position);
 				pointsLabel.setPosition(position.x, position.y);
+				for (int i = 0; i < compliments.size; i++) {
+					compliments.get(i).setPosition(
+							position.x + puck.getWidth() / 2 - compliments.get(i).getWidth() / 2,
+							position.y + pointsLabel.getHeight() * 1.5f);
+				}
 
 				if (!pointsLabel.applied) {
+					pointsLabel.applied = true;
 					pointsLabel.addAction(Actions.sequence(Actions.alpha(0),
 							Actions.alpha(1, 0.2f), Actions.delay(0.2f), Actions.alpha(0, 0.2f)));
-					pointsLabel.applied = true;
+
+					if (foursCombo == 5) {
+						compliments.get(2).addAction(
+								Actions.sequence(Actions.alpha(0), Actions.alpha(1, 0.2f),
+										Actions.delay(0.2f), Actions.alpha(0, 0.2f)));
+						return;
+					}
+					if (foursCombo == 3) {
+
+						compliments.get(0).addAction(
+								Actions.sequence(Actions.alpha(0), Actions.alpha(1, 0.2f),
+										Actions.delay(0.2f), Actions.alpha(0, 0.2f)));
+						return;
+					}
+					if (score > lastMultiple * 20) {
+						compliments.get(1).addAction(
+								Actions.sequence(Actions.alpha(0), Actions.alpha(1, 0.2f),
+										Actions.delay(0.2f), Actions.alpha(0, 0.2f)));
+						lastMultiple++;
+						return;
+					}
 				}
 
 				powerBar.check = false;
