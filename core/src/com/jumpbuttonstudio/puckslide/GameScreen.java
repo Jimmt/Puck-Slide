@@ -27,7 +27,7 @@ public class GameScreen extends BaseScreen {
 	ButtonsDialog dialog;
 	RetryDialog retryDialog;
 	Background background;
-	Image logo, arrow, black;
+	Image logo, arrow, transition;
 	Array<Image> compliments;
 	Flag flag;
 	Label scoreLabel;
@@ -36,6 +36,7 @@ public class GameScreen extends BaseScreen {
 	int foursCombo, lastMultiple = 1;
 	float camX, lastSnowChange, snowChangeTime = 2f, startingX, lastFlagX;
 	float fadeTime = 0.1f, arrowX;
+	float fade1, fade2, fade3;
 	Puck puck;
 	Array<GroundTile> tiles, temp;
 	InputMultiplexer multiplexer;
@@ -61,7 +62,11 @@ public class GameScreen extends BaseScreen {
 		listener = new GameContactListener();
 		world.setContactListener(listener);
 
-		black = new Image(Textures.getTex("black.png"));
+		transition = new Image(Textures.getTex("transition.png"));
+		transition.setSize(Constants.WIDTH, Constants.HEIGHT);
+		hudStage.addActor(transition);
+		transition.getColor().a = 0;
+
 		compliments = new Array<Image>();
 		for (int i = 0; i < 3; i++) {
 			Image image = new Image(Textures.getTex("Compliments/0" + i + ".png"));
@@ -97,12 +102,19 @@ public class GameScreen extends BaseScreen {
 		home.setSize(home.getWidth() * 0.5f, home.getHeight() * 0.5f);
 		home.setPosition(sound.getX() - home.getWidth() - borderSize, sound.getY());
 
+		fade1 = 0.1f;
+		fade2 = 0.1f;
+		fade3 = 0.1f;
 		home.addListener(new ClickListener() {
 			public void clicked(InputEvent event, float x, float y) {
 				PuckSlide.soundManager.play("button", 0.2f);
 
 				if (!dialog.isVisible()) {
-					game.setScreen(new GameScreen(game, 0, false));
+					retryDialog.addAction(Actions.alpha(0, fade1 + fade2));
+					transition.addAction(Actions.sequence(Actions.alpha(1, fade1),
+							Actions.delay(fade2),
+							Actions.parallel(Actions.alpha(0, fade3), new GameOverAction(0, false))));
+
 				}
 			}
 		});
@@ -122,11 +134,6 @@ public class GameScreen extends BaseScreen {
 			}
 		});
 		hudStage.addActor(home);
-		if (gameOver) {
-			home.setVisible(true);
-		} else {
-			home.setVisible(false);
-		}
 		hudStage.addActor(sound);
 
 		if (gameOver) {
@@ -169,6 +176,12 @@ public class GameScreen extends BaseScreen {
 			logo.setVisible(false);
 		} else {
 		}
+
+		if (gameOver) {
+			home.setVisible(true);
+		} else {
+			home.setVisible(puck != null);
+		}
 	}
 
 	class VisibleAction extends Action {
@@ -188,11 +201,29 @@ public class GameScreen extends BaseScreen {
 
 	}
 
+	public void enterMenuMode() {
+		inGameMode = false;
+		scoreLabel.addAction(Actions.sequence(Actions.alpha(0, 0.3f), new VisibleAction(scoreLabel,
+				true)));
+
+		float x = logo.getX();
+		float y = logo.getY();
+		logo.addAction(Actions.sequence(Actions.alpha(1), Actions.moveTo(x, y + 100),
+				Actions.moveTo(x, y, 0.5f, Interpolation.pow5Out), new VisibleAction(logo, true)));
+		dialog.play.addAction(Actions.sequence(Actions.alpha(0), Actions.alpha(1, 0.3f)));
+		if (powerBar != null) {
+			powerBar.addAction(Actions.sequence(Actions.alpha(0, 0.5f), new VisibleAction(powerBar,
+					true)));
+		}
+
+		gameOver = false;
+	}
+
 	public void enterGameMode() {
 		if (!PuckSlide.soundManager.musics.get("ingame").isPlaying()) {
 			PuckSlide.soundManager.playMusic("ingame", 0.15f);
 		}
-
+		home.setVisible(true);
 		inGameMode = true;
 		scoreLabel.addAction(Actions.sequence(Actions.alpha(1, 0.3f), new VisibleAction(scoreLabel,
 				true)));
@@ -296,32 +327,36 @@ public class GameScreen extends BaseScreen {
 		return tiles.get(tiles.size - 2).getX() + tiles.get(tiles.size - 2).getWidth();
 	}
 
+	class GameOverAction extends Action {
+		int score;
+		boolean gameOver;
+
+		public GameOverAction(int score, boolean gameOver) {
+			this.score = score;
+			this.gameOver = gameOver;
+		}
+
+		@Override
+		public boolean act(float delta) {
+			game.setScreen(new GameScreen(game, score, gameOver));
+			return true;
+		}
+
+	}
+
 	public void gameOver() {
 		if (!gameOver) {
 			PuckSlide.soundManager.play("lose");
 			gameOver = true;
-			PuckSlide.services.submitScore(score);
+// PuckSlide.services.submitScore(score);
 			if (score > Prefs.prefs.getInteger("highscore")) {
 				Prefs.prefs.putInteger("highscore", score);
 				Prefs.prefs.flush();
 			}
-			game.setScreen(new GameScreen(game, score, true));
+			transition.addAction(Actions.sequence(Actions.alpha(1, fade1), Actions.delay(fade2),
+					Actions.parallel(Actions.alpha(0, fade3), new GameOverAction(score, true))));
+
 		}
-	}
-
-	public void enterMenuMode() {
-		inGameMode = false;
-		scoreLabel.addAction(Actions.sequence(Actions.alpha(0, 0.3f), new VisibleAction(scoreLabel,
-				true)));
-
-		logo.addAction(Actions.sequence(Actions.alpha(1, 0.3f), new VisibleAction(logo, true)));
-
-		if (powerBar != null) {
-			powerBar.addAction(Actions.sequence(Actions.alpha(0, 0.3f), new VisibleAction(powerBar,
-					true)));
-		}
-
-		gameOver = false;
 	}
 
 	@Override

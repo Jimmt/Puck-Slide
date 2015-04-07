@@ -29,7 +29,7 @@ public class SoundManager {
 		if (play) {
 			Entries<String, Music> entries = musics.entries();
 			while (entries.hasNext()) {
-				entries.next().value.stop();
+				entries.next().value.pause();
 			}
 			((Music) musics.get(name)).play();
 		}
@@ -54,7 +54,7 @@ public class SoundManager {
 		if (play) {
 			Entries<String, Music> entries = musics.entries();
 			while (entries.hasNext()) {
-				entries.next().value.stop();
+				entries.next().value.pause();
 			}
 			((Music) musics.get(name)).setVolume(volume);
 			((Music) musics.get(name)).play();
@@ -82,7 +82,7 @@ public class SoundManager {
 		if (!play) {
 			Entries<String, Music> entries = musics.entries();
 			while (entries.hasNext()) {
-				entries.next().value.stop();
+				entries.next().value.pause();
 			}
 		}
 	}

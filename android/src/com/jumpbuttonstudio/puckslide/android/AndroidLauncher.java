@@ -21,22 +21,22 @@ public class AndroidLauncher extends AndroidApplication implements IGoogleServic
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 
-		helper = new GameHelper(this, GameHelper.CLIENT_GAMES);
-		helper.enableDebugLog(false);
-
-		GameHelperListener gameHelperListener = new GameHelper.GameHelperListener() {
-			@Override
-			public void onSignInSucceeded() {
-				Gdx.app.log("MainActivity", "Sign in succeeded");
-			}
-
-			@Override
-			public void onSignInFailed() {
-				Gdx.app.log("MainActivity", "Sign in failed");
-			}
-		};
-
-		helper.setup(gameHelperListener);
+//		helper = new GameHelper(this, GameHelper.CLIENT_GAMES);
+//		helper.enableDebugLog(false);
+//
+//		GameHelperListener gameHelperListener = new GameHelper.GameHelperListener() {
+//			@Override
+//			public void onSignInSucceeded() {
+//				Gdx.app.log("MainActivity", "Sign in succeeded");
+//			}
+//
+//			@Override
+//			public void onSignInFailed() {
+//				Gdx.app.log("MainActivity", "Sign in failed");
+//			}
+//		};
+//
+//		helper.setup(gameHelperListener);
 
 		AndroidApplicationConfiguration config = new AndroidApplicationConfiguration();
 		initialize(new PuckSlide(this), config);
@@ -45,19 +45,19 @@ public class AndroidLauncher extends AndroidApplication implements IGoogleServic
 	@Override
 	protected void onStart() {
 		super.onStart();
-		helper.onStart(this);
+//		helper.onStart(this);
 	}
 
 	@Override
 	protected void onStop() {
 		super.onStop();
-		helper.onStop();
+//		helper.onStop();
 	}
 
 	@Override
 	protected void onActivityResult(int requestCode, int resultCode, Intent data) {
 		super.onActivityResult(requestCode, resultCode, data);
-		helper.onActivityResult(requestCode, resultCode, data);
+//		helper.onActivityResult(requestCode, resultCode, data);
 	}
 
 	@Override

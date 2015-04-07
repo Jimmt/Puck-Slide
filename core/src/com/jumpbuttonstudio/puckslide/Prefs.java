@@ -16,6 +16,7 @@ public class Prefs {
 
 		if (!prefs.contains("sound")) {
 			prefs.putBoolean("sound", true);
+
 		} else {
 			PuckSlide.soundManager.setPlay(prefs.getBoolean("sound"));
 
