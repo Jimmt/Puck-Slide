@@ -44,7 +44,7 @@ public class GameScreen extends BaseScreen {
 	PowerBar powerBar;
 	ParticleEffect snow;
 	GameContactListener listener;
-	ImageButton home, sound;
+	ImageButton home, sound, gplay;
 
 	public GameScreen(final PuckSlide game, int score, boolean gameOver) {
 		super(game);
@@ -86,6 +86,8 @@ public class GameScreen extends BaseScreen {
 		retryDialog = new RetryDialog(this, score, skin);
 		hudStage.addActor(retryDialog);
 
+		ImageButtonStyle gplayStyle = new ImageButtonStyle();
+		gplayStyle.up = new Image(Textures.getTex("Icon/gplay_360.png")).getDrawable();
 		ImageButtonStyle homeStyle = new ImageButtonStyle();
 		homeStyle.up = new Image(Textures.getTex("Icon/home_360.png")).getDrawable();
 		ImageButtonStyle soundStyle = new ImageButtonStyle();
@@ -98,9 +100,12 @@ public class GameScreen extends BaseScreen {
 		sound.setSize(sound.getWidth() * 0.5f, sound.getHeight() * 0.5f);
 		sound.setPosition(Constants.WIDTH - sound.getWidth() - borderSize,
 				Constants.HEIGHT - sound.getHeight() - borderSize);
+		gplay = new ImageButton(gplayStyle);
+		gplay.setSize(gplay.getWidth() * 0.5f, gplay.getHeight() * 0.5f);
+		gplay.setPosition(sound.getX() - gplay.getWidth() - borderSize, sound.getY());
 		home = new ImageButton(homeStyle);
 		home.setSize(home.getWidth() * 0.5f, home.getHeight() * 0.5f);
-		home.setPosition(sound.getX() - home.getWidth() - borderSize, sound.getY());
+		home.setPosition(gplay.getX() - home.getWidth() - borderSize, sound.getY());
 
 		fade1 = 0.1f;
 		fade2 = 0.1f;
@@ -110,7 +115,7 @@ public class GameScreen extends BaseScreen {
 				PuckSlide.soundManager.play("button", 0.2f);
 
 				if (!dialog.isVisible()) {
-					retryDialog.addAction(Actions.alpha(0, fade1 + fade2));
+					transition.toFront();
 					transition.addAction(Actions.sequence(Actions.alpha(1, fade1),
 							Actions.delay(fade2),
 							Actions.parallel(Actions.alpha(0, fade3), new GameOverAction(0, false))));
@@ -133,8 +138,19 @@ public class GameScreen extends BaseScreen {
 				}
 			}
 		});
+		PuckSlide.services.signIn();
+		gplay.addListener(new ClickListener() {
+			public void clicked(InputEvent event, float x, float y) {
+				if (PuckSlide.services.getSignedIn()) {
+					PuckSlide.services.getLeaderboards();
+				} else {
+					PuckSlide.services.signIn();
+				}
+			}
+		});
 		hudStage.addActor(home);
 		hudStage.addActor(sound);
+		hudStage.addActor(gplay);
 
 		if (gameOver) {
 			retryDialog.setVisible(true);
@@ -348,11 +364,14 @@ public class GameScreen extends BaseScreen {
 		if (!gameOver) {
 			PuckSlide.soundManager.play("lose");
 			gameOver = true;
-// PuckSlide.services.submitScore(score);
+			if (PuckSlide.services.getSignedIn()) {
+				PuckSlide.services.submitHighscore(score);
+			}
 			if (score > Prefs.prefs.getInteger("highscore")) {
 				Prefs.prefs.putInteger("highscore", score);
 				Prefs.prefs.flush();
 			}
+			transition.toFront();
 			transition.addAction(Actions.sequence(Actions.alpha(1, fade1), Actions.delay(fade2),
 					Actions.parallel(Actions.alpha(0, fade3), new GameOverAction(score, true))));
 
@@ -368,7 +387,7 @@ public class GameScreen extends BaseScreen {
 			stage.getBatch().begin();
 			snow.draw(stage.getBatch());
 			stage.getBatch().end();
-			snow.setPosition(0, Constants.SCLHEIGHT);
+			snow.setPosition(camera.position.x - camera.viewportWidth / 2, Constants.SCLHEIGHT);
 
 			if (lastSnowChange > snowChangeTime) {
 				lastSnowChange = 0;

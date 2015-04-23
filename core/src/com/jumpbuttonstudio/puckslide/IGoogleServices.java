@@ -3,13 +3,11 @@ package com.jumpbuttonstudio.puckslide;
 public interface IGoogleServices {
 	public void signIn();
 
-	public void signOut();
+	public void submitHighscore(int score);
 
-	public void rateGame();
+	public void getLeaderboards();
+	
+	public void unlockAchievement(String id);
 
-	public void submitScore(long score);
-
-	public void showScores();
-
-	public boolean isSignedIn();
+	public boolean getSignedIn();
 }

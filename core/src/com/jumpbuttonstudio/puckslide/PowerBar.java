@@ -11,8 +11,9 @@ public class PowerBar extends Image implements InputProcessor {
 	boolean startTime, launched, check;
 	float timeDown, timeMax = 1.0f;
 	float launchTime, timeCap = 2f;
+	int flip;
 	float originalCamX, finalCamX;
-	boolean set, forward = true;
+	boolean set, forward = true, roll;
 	float barX;
 	Image barBG, bar;
 	Puck puck;
@@ -54,7 +55,15 @@ public class PowerBar extends Image implements InputProcessor {
 			barX = getX() + (getWidth() - 8) * 2
 					* Math.abs((timeDown / 2) - MathUtils.floor((timeDown / 2) + 0.5f));
 			if (timeDown < timeMax) {
-				gameScreen.camera.zoom = 1 - (timeDown / timeMax) * 0.25f;
+				if (gameScreen.score > 100) {
+					if (flip == 0) {
+						gameScreen.camera.zoom = -(1 - (timeDown / timeMax) * 0.25f);
+					} else {
+						gameScreen.camera.zoom = 1 - (timeDown / timeMax) * 0.25f;
+					}
+				} else {
+					gameScreen.camera.zoom = 1 - (timeDown / timeMax) * 0.25f;
+				}
 				if (!set) {
 					set = true;
 					originalCamX = gameScreen.camera.position.x;
@@ -80,14 +89,19 @@ public class PowerBar extends Image implements InputProcessor {
 			bar.addAction(Actions.alpha(0));
 			gameScreen.camera.zoom = 1;
 		}
+		
 		if (launched) {
 
+			if (!roll && gameScreen.score > 100) {
+				roll = true;
+				flip = MathUtils.random(3);
+			}
 			if (launchTime > timeCap) {
 				launchTime = 0;
 				gameScreen.addTiles(gameScreen.lastTileX(), false);
 				launched = false;
 				check = true;
-
+				roll = false;
 			} else {
 				launchTime += delta;
 			}

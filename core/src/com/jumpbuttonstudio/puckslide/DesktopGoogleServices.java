@@ -1,34 +1,29 @@
 package com.jumpbuttonstudio.puckslide;
 
 public class DesktopGoogleServices implements IGoogleServices {
+
 	@Override
 	public void signIn() {
-		System.out.println("DesktopGoogleServies: signIn()");
+		// TODO Auto-generated method stub
+		
 	}
 
 	@Override
-	public void signOut() {
-		System.out.println("DesktopGoogleServies: signOut()");
+	public void submitHighscore(int score) {
+		// TODO Auto-generated method stub
+		
 	}
 
 	@Override
-	public void rateGame() {
-		System.out.println("DesktopGoogleServices: rateGame()");
+	public void getLeaderboards() {
+		// TODO Auto-generated method stub
+		
 	}
 
 	@Override
-	public void submitScore(long score) {
-		System.out.println("DesktopGoogleServies: submitScore(" + score + ")");
-	}
-
-	@Override
-	public void showScores() {
-		System.out.println("DesktopGoogleServies: showScores()");
-	}
-
-	@Override
-	public boolean isSignedIn() {
-		System.out.println("DesktopGoogleServies: isSignedIn()");
+	public boolean getSignedIn() {
+		// TODO Auto-generated method stub
 		return false;
 	}
+	
 }
