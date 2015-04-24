@@ -7,6 +7,8 @@ public interface IGoogleServices {
 
 	public void getLeaderboards();
 	
+	public void getAchievements();
+	
 	public void unlockAchievement(String id);
 
 	public boolean getSignedIn();

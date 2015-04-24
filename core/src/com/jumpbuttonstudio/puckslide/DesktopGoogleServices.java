@@ -25,5 +25,17 @@ public class DesktopGoogleServices implements IGoogleServices {
 		// TODO Auto-generated method stub
 		return false;
 	}
+
+	@Override
+	public void unlockAchievement(String id) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void getAchievements() {
+		// TODO Auto-generated method stub
+		
+	}
 	
 }

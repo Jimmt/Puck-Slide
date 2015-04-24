@@ -44,7 +44,7 @@ public class GameScreen extends BaseScreen {
 	PowerBar powerBar;
 	ParticleEffect snow;
 	GameContactListener listener;
-	ImageButton home, sound, gplay;
+	ImageButton home, sound, gplay, achievements, leaderboards;
 
 	public GameScreen(final PuckSlide game, int score, boolean gameOver) {
 		super(game);
@@ -86,6 +86,10 @@ public class GameScreen extends BaseScreen {
 		retryDialog = new RetryDialog(this, score, skin);
 		hudStage.addActor(retryDialog);
 
+		ImageButtonStyle achievementsStyle = new ImageButtonStyle();
+		achievementsStyle.up = new Image(Textures.getTex("Icon/achievements.png")).getDrawable();
+		ImageButtonStyle leaderboardsStyle = new ImageButtonStyle();
+		leaderboardsStyle.up = new Image(Textures.getTex("Icon/leaderboards.png")).getDrawable();
 		ImageButtonStyle gplayStyle = new ImageButtonStyle();
 		gplayStyle.up = new Image(Textures.getTex("Icon/gplay_360.png")).getDrawable();
 		ImageButtonStyle homeStyle = new ImageButtonStyle();
@@ -106,6 +110,14 @@ public class GameScreen extends BaseScreen {
 		home = new ImageButton(homeStyle);
 		home.setSize(home.getWidth() * 0.5f, home.getHeight() * 0.5f);
 		home.setPosition(gplay.getX() - home.getWidth() - borderSize, sound.getY());
+
+		achievements = new ImageButton(achievementsStyle);
+		achievements.setSize(achievements.getWidth() * 0.5f, achievements.getHeight() * 0.5f);
+		achievements.setPosition(borderSize, sound.getY());
+		leaderboards = new ImageButton(leaderboardsStyle);
+		leaderboards.setSize(leaderboards.getWidth() * 0.5f, leaderboards.getHeight() * 0.5f);
+		leaderboards.setPosition(achievements.getX() + achievements.getWidth() + borderSize,
+				sound.getY());
 
 		fade1 = 0.1f;
 		fade2 = 0.1f;
@@ -138,8 +150,26 @@ public class GameScreen extends BaseScreen {
 				}
 			}
 		});
-		PuckSlide.services.signIn();
+
 		gplay.addListener(new ClickListener() {
+			public void clicked(InputEvent event, float x, float y) {
+				if (PuckSlide.services.getSignedIn()) {
+
+				} else {
+					PuckSlide.services.signIn();
+				}
+			}
+		});
+		achievements.addListener(new ClickListener() {
+			public void clicked(InputEvent event, float x, float y) {
+				if (PuckSlide.services.getSignedIn()) {
+					PuckSlide.services.getAchievements();
+				} else {
+					PuckSlide.services.signIn();
+				}
+			}
+		});
+		leaderboards.addListener(new ClickListener() {
 			public void clicked(InputEvent event, float x, float y) {
 				if (PuckSlide.services.getSignedIn()) {
 					PuckSlide.services.getLeaderboards();
@@ -151,6 +181,8 @@ public class GameScreen extends BaseScreen {
 		hudStage.addActor(home);
 		hudStage.addActor(sound);
 		hudStage.addActor(gplay);
+		hudStage.addActor(leaderboards);
+		hudStage.addActor(achievements);
 
 		if (gameOver) {
 			retryDialog.setVisible(true);
@@ -198,6 +230,7 @@ public class GameScreen extends BaseScreen {
 		} else {
 			home.setVisible(puck != null);
 		}
+		PuckSlide.services.signIn();
 	}
 
 	class VisibleAction extends Action {
@@ -362,6 +395,27 @@ public class GameScreen extends BaseScreen {
 
 	public void gameOver() {
 		if (!gameOver) {
+			Prefs.prefs.putInteger("deaths", Prefs.prefs.getInteger("deaths") + 1);
+			Prefs.prefs.flush();
+			if (PuckSlide.services.getSignedIn()) {
+				if (score > 0) {
+					PuckSlide.services.unlockAchievement(Constants.POINTS_0);
+				}
+				if (score >= 20) {
+					PuckSlide.services.unlockAchievement(Constants.POINTS_20);
+				}
+				if (score >= 100) {
+					PuckSlide.services.unlockAchievement(Constants.POINTS_100);
+				}
+
+				if (Prefs.prefs.getInteger("deaths") >= 10) {
+					PuckSlide.services.unlockAchievement(Constants.FAIL_10);
+				}
+				if (Prefs.prefs.getInteger("deaths") >= 100) {
+					PuckSlide.services.unlockAchievement(Constants.FAIL_100);
+				}
+			}
+
 			PuckSlide.soundManager.play("lose");
 			gameOver = true;
 			if (PuckSlide.services.getSignedIn()) {
@@ -381,6 +435,7 @@ public class GameScreen extends BaseScreen {
 	@Override
 	public void render(float delta) {
 		super.render(delta);
+
 
 		if (snow != null) {
 			snow.update(delta);

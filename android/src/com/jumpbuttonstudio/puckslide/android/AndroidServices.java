@@ -8,6 +8,7 @@ import com.jumpbuttonstudio.puckslide.IGoogleServices;
 public class AndroidServices implements GameHelperListener, ActionResolver, IGoogleServices {
 	public AndroidLauncher launcher;
 	public GameHelper gameHelper;
+	public int REQUEST_ACHIEVEMENTS = 1001; //arbitrary
 
 	public AndroidServices(GameHelper _gameHelper, AndroidLauncher _launcher) {
 		launcher = _launcher;
@@ -45,6 +46,7 @@ public class AndroidServices implements GameHelperListener, ActionResolver, IGoo
 
 	@Override
 	public void unlockAchievementGPGS(String achievementId) {
+		Games.Achievements.unlock(gameHelper.getApiClient(), achievementId);
 	}
 
 	@Override
@@ -56,6 +58,7 @@ public class AndroidServices implements GameHelperListener, ActionResolver, IGoo
 
 	@Override
 	public void getAchievementsGPGS() {
+		launcher.startActivityForResult(Games.Achievements.getAchievementsIntent(gameHelper.getApiClient()), REQUEST_ACHIEVEMENTS);
 	}
 
 	@Override
@@ -87,6 +90,12 @@ public class AndroidServices implements GameHelperListener, ActionResolver, IGoo
 	public void unlockAchievement(String id) {
 		unlockAchievementGPGS(id);
 
+	}
+
+	@Override
+	public void getAchievements() {
+		getAchievementsGPGS();
+		
 	}
 
 }
