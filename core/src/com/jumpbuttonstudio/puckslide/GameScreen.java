@@ -44,7 +44,7 @@ public class GameScreen extends BaseScreen {
 	PowerBar powerBar;
 	ParticleEffect snow;
 	GameContactListener listener;
-	ImageButton home, sound, gplay, achievements, leaderboards;
+	ImageButton home, sound, gplay, achievements, leaderboards, removeAds;
 
 	public GameScreen(final PuckSlide game, int score, boolean gameOver) {
 		super(game);
@@ -55,6 +55,12 @@ public class GameScreen extends BaseScreen {
 			PuckSlide.soundManager.musics.get("menu").setLooping(true);
 			PuckSlide.soundManager.musics.get("ingame").setLooping(true);
 			PuckSlide.soundManager.playMusic("menu", 0.2f);
+		} else {
+			PuckSlide.sessionDeaths++;
+
+			if (PuckSlide.sessionDeaths % 5 == 0) {
+				PuckSlide.services.showOrLoadInterstitial();
+			}
 		}
 
 		this.gameOver = gameOver;
@@ -97,6 +103,8 @@ public class GameScreen extends BaseScreen {
 		ImageButtonStyle soundStyle = new ImageButtonStyle();
 		soundStyle.imageChecked = new Image(Textures.getTex("Icon/soundon_360.png")).getDrawable();
 		soundStyle.up = new Image(Textures.getTex("Icon/soundoff_360.png")).getDrawable();
+		ImageButtonStyle removeAdsStyle = new ImageButtonStyle();
+		removeAdsStyle.up = new Image(Textures.getTex("Icon/removead_360.png")).getDrawable();
 
 		float borderSize = 10f;
 		sound = new ImageButton(soundStyle);
@@ -117,6 +125,10 @@ public class GameScreen extends BaseScreen {
 		leaderboards = new ImageButton(leaderboardsStyle);
 		leaderboards.setSize(leaderboards.getWidth() * 0.5f, leaderboards.getHeight() * 0.5f);
 		leaderboards.setPosition(achievements.getX() + achievements.getWidth() + borderSize,
+				sound.getY());
+		removeAds = new ImageButton(removeAdsStyle);
+		removeAds.setSize(removeAds.getWidth() * 0.5f, removeAds.getHeight() * 0.5f);
+		removeAds.setPosition(leaderboards.getX() + leaderboards.getWidth() + borderSize,
 				sound.getY());
 
 		fade1 = 0.1f;
@@ -178,11 +190,17 @@ public class GameScreen extends BaseScreen {
 				}
 			}
 		});
+		removeAds.addListener(new ClickListener() {
+			public void clicked(InputEvent event, float x, float y) {
+				// in app purchase
+			}
+		});
 		hudStage.addActor(home);
 		hudStage.addActor(sound);
 		hudStage.addActor(gplay);
 		hudStage.addActor(leaderboards);
 		hudStage.addActor(achievements);
+		hudStage.addActor(removeAds);
 
 		if (gameOver) {
 			retryDialog.setVisible(true);
@@ -435,7 +453,6 @@ public class GameScreen extends BaseScreen {
 	@Override
 	public void render(float delta) {
 		super.render(delta);
-
 
 		if (snow != null) {
 			snow.update(delta);

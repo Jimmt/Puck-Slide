@@ -1,5 +1,8 @@
 package com.jumpbuttonstudio.puckslide.android;
 
+import android.widget.Toast;
+
+import com.google.android.gms.ads.AdRequest;
 import com.google.android.gms.games.Games;
 import com.google.example.games.basegameutils.GameHelper;
 import com.google.example.games.basegameutils.GameHelper.GameHelperListener;
@@ -8,7 +11,7 @@ import com.jumpbuttonstudio.puckslide.IGoogleServices;
 public class AndroidServices implements GameHelperListener, ActionResolver, IGoogleServices {
 	public AndroidLauncher launcher;
 	public GameHelper gameHelper;
-	public int REQUEST_ACHIEVEMENTS = 1001; //arbitrary
+	public int REQUEST_ACHIEVEMENTS = 1001; // arbitrary
 
 	public AndroidServices(GameHelper _gameHelper, AndroidLauncher _launcher) {
 		launcher = _launcher;
@@ -58,7 +61,9 @@ public class AndroidServices implements GameHelperListener, ActionResolver, IGoo
 
 	@Override
 	public void getAchievementsGPGS() {
-		launcher.startActivityForResult(Games.Achievements.getAchievementsIntent(gameHelper.getApiClient()), REQUEST_ACHIEVEMENTS);
+		launcher.startActivityForResult(
+				Games.Achievements.getAchievementsIntent(gameHelper.getApiClient()),
+				REQUEST_ACHIEVEMENTS);
 	}
 
 	@Override
@@ -95,7 +100,28 @@ public class AndroidServices implements GameHelperListener, ActionResolver, IGoo
 	@Override
 	public void getAchievements() {
 		getAchievementsGPGS();
-		
+
+	}
+
+	@Override
+	public void showOrLoadInterstitial() {
+		try {
+			launcher.runOnUiThread(new Runnable() {
+				public void run() {
+					if (launcher.interstitialAd.isLoaded()) {
+						launcher.interstitialAd.show();
+// Toast.makeText(launcher.getApplicationContext(), "Showing Interstitial",
+// Toast.LENGTH_SHORT).show();
+					} else {
+						AdRequest interstitialRequest = new AdRequest.Builder().build();
+						launcher.interstitialAd.loadAd(interstitialRequest);
+// Toast.makeText(launcher.getApplicationContext(), "Loading Interstitial",
+// Toast.LENGTH_SHORT).show();
+					}
+				}
+			});
+		} catch (Exception e) {
+		}
 	}
 
 }

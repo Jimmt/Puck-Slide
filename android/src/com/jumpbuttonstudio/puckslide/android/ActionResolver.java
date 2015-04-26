@@ -12,5 +12,6 @@ public interface ActionResolver {
 	public void getLeaderboardGPGS();
 
 	public void getAchievementsGPGS();
+	
 
 }

@@ -10,6 +10,7 @@ import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 public class PuckSlide extends Game {
 	public static SoundManager soundManager;
 	public static IGoogleServices services;
+	public static int sessionDeaths = 0;
 
 	public static boolean DEBUG = true;
 

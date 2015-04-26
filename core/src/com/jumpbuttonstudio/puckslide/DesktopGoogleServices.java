@@ -37,5 +37,11 @@ public class DesktopGoogleServices implements IGoogleServices {
 		// TODO Auto-generated method stub
 		
 	}
+
+	@Override
+	public void showOrLoadInterstitial() {
+		// TODO Auto-generated method stub
+		
+	}
 	
 }

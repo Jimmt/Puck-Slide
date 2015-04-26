@@ -12,4 +12,6 @@ public interface IGoogleServices {
 	public void unlockAchievement(String id);
 
 	public boolean getSignedIn();
+	
+	public void showOrLoadInterstitial();
 }

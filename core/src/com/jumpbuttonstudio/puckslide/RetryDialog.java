@@ -20,6 +20,8 @@ public class RetryDialog extends Dialog {
 	public RetryDialog(final GameScreen gameScreen, int score, Skin skin) {
 		super("", skin);
 
+		
+
 		Image panel = new Image(Textures.getTex("UI/gameover.png"));
 
 		background(panel.getDrawable());
