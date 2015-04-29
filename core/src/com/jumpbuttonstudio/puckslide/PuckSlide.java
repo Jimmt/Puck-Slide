@@ -21,7 +21,7 @@ public class PuckSlide extends Game {
 	@Override
 	public void create() {
 
-//		DEBUG = false;
+// DEBUG = false;
 
 		soundManager = new SoundManager();
 		soundManager.loadSound("button", Gdx.files.internal("SFX/Button.wav"));
@@ -36,7 +36,11 @@ public class PuckSlide extends Game {
 
 		soundManager.setPlay(!DEBUG);
 
-		setScreen(new GameScreen(this, 0, false));
+		if (!DEBUG) {
+			setScreen(new SplashScreen(this));
+		} else {
+			setScreen(new GameScreen(this, 0, false));
+		}
 
 	}
 

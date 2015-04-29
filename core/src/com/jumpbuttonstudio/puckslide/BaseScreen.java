@@ -18,13 +18,21 @@ public class BaseScreen implements Screen {
 	World world;
 	Box2DDebugRenderer renderer;
 	PuckSlide game;
+	StretchViewport viewport;
+	StretchViewport hudViewport;
+	float aspect;
 
 	public BaseScreen(PuckSlide game) {
 		this.game = game;
+
+		aspect = Constants.WIDTH / Constants.HEIGHT;
+		viewport = new StretchViewport(Constants.SCLWIDTH, Constants.SCLHEIGHT);
 		
-		StretchViewport viewport = new StretchViewport(Constants.SCLWIDTH, Constants.SCLHEIGHT);
+
 		stage = new Stage(viewport);
-		StretchViewport hudViewport = new StretchViewport(Constants.WIDTH, Constants.HEIGHT);
+		hudViewport = new StretchViewport(Constants.WIDTH, Constants.HEIGHT);
+		hudStage = new Stage(hudViewport);
+
 		hudStage = new Stage(hudViewport);
 
 		camera = (OrthographicCamera) stage.getCamera();
@@ -32,7 +40,7 @@ public class BaseScreen implements Screen {
 		skin = new Skin(Gdx.files.internal("skin/uiskin.json"));
 
 		world = new World(new Vector2(0, -9.81f), false);
-		
+
 		renderer = new Box2DDebugRenderer();
 	}
 
@@ -46,20 +54,23 @@ public class BaseScreen implements Screen {
 		Gdx.gl.glClearColor(0, 0, 0, 1);
 		Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
 
+		
 		world.step(1 / 60f, 3, 3);
 
 		stage.act(delta);
 		stage.draw();
-
 		hudStage.act(delta);
-		
-//		renderer.render(world, camera.combined);
+		hudViewport.update(Gdx.graphics.getWidth(), Gdx.graphics.getHeight(), true);
+
+// renderer.render(world, camera.combined);
 	}
 
 	@Override
 	public void resize(int width, int height) {
-		// TODO Auto-generated method stub
-
+		viewport.update(width, height);
+		viewport.apply();
+		hudViewport.update(width, height);
+		hudViewport.apply();
 	}
 
 	@Override

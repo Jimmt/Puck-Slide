@@ -122,7 +122,7 @@ public class AndroidLauncher extends AndroidApplication implements GameHelperLis
 
 		} catch (IOException e) {
 			// Unrecoverable error connecting to Google Play services (e.g.,
-			// the old version of the service doesn't support getting
+			// the old version of the service doe sn't support getting
 // AdvertisingId).
 
 		} catch (GooglePlayServicesNotAvailableException e) {

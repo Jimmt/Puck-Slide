@@ -45,6 +45,7 @@ public class GameScreen extends BaseScreen {
 	ParticleEffect snow;
 	GameContactListener listener;
 	ImageButton home, sound, gplay, achievements, leaderboards, removeAds;
+	ImageButton gplayStatus;
 
 	public GameScreen(final PuckSlide game, int score, boolean gameOver) {
 		super(game);
@@ -62,7 +63,6 @@ public class GameScreen extends BaseScreen {
 				PuckSlide.services.showOrLoadInterstitial();
 			}
 		}
-
 		this.gameOver = gameOver;
 
 		listener = new GameContactListener();
@@ -195,12 +195,21 @@ public class GameScreen extends BaseScreen {
 				// in app purchase
 			}
 		});
+
 		hudStage.addActor(home);
 		hudStage.addActor(sound);
 		hudStage.addActor(gplay);
 		hudStage.addActor(leaderboards);
 		hudStage.addActor(achievements);
 		hudStage.addActor(removeAds);
+
+		ImageButtonStyle ibstyle = new ImageButtonStyle();
+		ibstyle.checked = new Image(Textures.getTex("UI/check.png")).getDrawable();
+		ibstyle.up = new Image(Textures.getTex("UI/x.png")).getDrawable();
+		gplayStatus = new ImageButton(ibstyle);
+		gplayStatus.setPosition(gplay.getX() + gplay.getWidth() / 2 - gplayStatus.getWidth() / 2,
+				gplay.getY() - gplayStatus.getHeight() * 1.25f);
+		hudStage.addActor(gplayStatus);
 
 		if (gameOver) {
 			retryDialog.setVisible(true);
@@ -453,6 +462,9 @@ public class GameScreen extends BaseScreen {
 	@Override
 	public void render(float delta) {
 		super.render(delta);
+		
+		  
+		gplayStatus.setChecked(PuckSlide.services.getSignedIn());
 
 		if (snow != null) {
 			snow.update(delta);

@@ -21,6 +21,7 @@ public class Background extends Actor {
 	Array<Image> fogs;
 	Array<CloudLayer> cloudLayers;
 	Array<Array<Image>> arrays;
+	Image filler;
 	float nextBackCloud = 0, nextFog = 0, nextMountain = -1.5f, nextBackMountain = 0f,
 			nextTree = MathUtils.random(0, 3);
 	float lastOffset;
@@ -44,8 +45,7 @@ public class Background extends Actor {
 		arrays.add(trees);
 		arrays.add(fogs);
 
-		float distance = (Constants.SCLHEIGHT - cloudHeight - mountainHeight / 4)
-				/ (cloudHeight / 3 * 2);
+		float distance = (Constants.SCLHEIGHT - cloudHeight - 0.35f) / (cloudHeight / 3 * 2);
 
 		for (int i = (int) distance; i >= 0; i--) {
 			CloudLayer cloudLayer = new CloudLayer(camera, -MathUtils.random(3), i == 0 ? 0 : (i
@@ -53,6 +53,8 @@ public class Background extends Actor {
 			cloudLayers.add(cloudLayer);
 		}
 
+		filler = new Image(Textures.getTex("Background/fill.png"));
+		filler.setSize(Constants.SCLWIDTH, Constants.SCLHEIGHT);
 
 // CloudLayer cloudLayer = new CloudLayer(camera, 0, 0, 0);
 // cloudLayers.add(cloudLayer);
@@ -64,6 +66,8 @@ public class Background extends Actor {
 		super.act(delta);
 
 		float boundX = camera.position.x + camera.viewportWidth / 2;
+
+		filler.act(delta);
 
 		if (boundX > nextFog) {
 
@@ -84,6 +88,7 @@ public class Background extends Actor {
 
 			Image cloud = new Image(Textures.getTex("Background/cloudsback.png"));
 			cloud.setSize(cloud.getWidth() / 100f, cloud.getHeight() / 100f);
+			System.out.println(Constants.SCLHEIGHT);
 			cloud.setPosition(nextBackCloud, Constants.SCLHEIGHT - cloud.getHeight());
 			nextBackCloud += 6;
 			backClouds.add(cloud);
@@ -130,6 +135,7 @@ public class Background extends Actor {
 
 		for (int i = 0; i < cloudLayers.size; i++) {
 			cloudLayers.get(i).act(delta);
+
 		}
 
 	}
@@ -137,6 +143,9 @@ public class Background extends Actor {
 	@Override
 	public void draw(Batch batch, float parentAlpha) {
 		super.draw(batch, parentAlpha);
+
+		filler.setX(camera.position.x - camera.viewportWidth / 2);
+		filler.draw(batch, parentAlpha);
 
 		for (int i = 0; i < arrays.size; i++) {
 			for (int j = 0; j < arrays.get(i).size; j++) {

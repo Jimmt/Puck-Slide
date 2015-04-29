@@ -62,10 +62,13 @@ public class CloudLayer extends Actor {
 
 		float leftBoundX = camera.position.x - camera.viewportWidth / 2;
 		float rightBoundX = camera.position.x + camera.viewportWidth / 2;
+		
+
 
 		for (int i = 0; i < clouds.size; i++) {
 			clouds.get(i).act(delta);
 			clouds.get(i).setX(clouds.get(i).getX() + speed);
+		
 
 // if (clouds.get(i).getX() + clouds.get(i).getWidth() <= 0) {
 // clouds.removeIndex(i);
