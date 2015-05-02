@@ -44,7 +44,8 @@ public class GameScreen extends BaseScreen {
 	PowerBar powerBar;
 	ParticleEffect snow;
 	GameContactListener listener;
-	ImageButton home, sound, gplay, achievements, leaderboards, removeAds;
+	ImageButton home, sound, gplay, achievements, leaderboards;
+// ImageButton removeAds;
 	ImageButton gplayStatus;
 
 	public GameScreen(final PuckSlide game, int score, boolean gameOver) {
@@ -126,10 +127,11 @@ public class GameScreen extends BaseScreen {
 		leaderboards.setSize(leaderboards.getWidth() * 0.5f, leaderboards.getHeight() * 0.5f);
 		leaderboards.setPosition(achievements.getX() + achievements.getWidth() + borderSize,
 				sound.getY());
-		removeAds = new ImageButton(removeAdsStyle);
-		removeAds.setSize(removeAds.getWidth() * 0.5f, removeAds.getHeight() * 0.5f);
-		removeAds.setPosition(leaderboards.getX() + leaderboards.getWidth() + borderSize,
-				sound.getY());
+// removeAds = new ImageButton(removeAdsStyle);
+// removeAds.setSize(removeAds.getWidth() * 0.5f, removeAds.getHeight() * 0.5f);
+// removeAds.setPosition(leaderboards.getX() + leaderboards.getWidth() +
+// borderSize,
+// sound.getY());
 
 		fade1 = 0.1f;
 		fade2 = 0.1f;
@@ -190,18 +192,18 @@ public class GameScreen extends BaseScreen {
 				}
 			}
 		});
-		removeAds.addListener(new ClickListener() {
-			public void clicked(InputEvent event, float x, float y) {
-				// in app purchase
-			}
-		});
+// removeAds.addListener(new ClickListener() {
+// public void clicked(InputEvent event, float x, float y) {
+		// // in app purchase
+// }
+// });
 
 		hudStage.addActor(home);
 		hudStage.addActor(sound);
 		hudStage.addActor(gplay);
 		hudStage.addActor(leaderboards);
 		hudStage.addActor(achievements);
-		hudStage.addActor(removeAds);
+// hudStage.addActor(removeAds);
 
 		ImageButtonStyle ibstyle = new ImageButtonStyle();
 		ibstyle.checked = new Image(Textures.getTex("UI/check.png")).getDrawable();
@@ -324,7 +326,7 @@ public class GameScreen extends BaseScreen {
 				+ puck.getHeight() + arrow.getHeight() / 2);
 		arrowX = puck.getX() + puck.getWidth() / 2 - arrow.getWidth() / 2;
 		powerBar = new PowerBar(puck, this);
-		powerBar.setPosition(Constants.WIDTH / 2 - powerBar.getWidth() / 2, powerBar.getHeight());
+		powerBar.setPosition(Constants.WIDTH / 2 - powerBar.getWidth() / 2, powerBar.getHeight() / 2f);
 		hudStage.addActor(powerBar);
 		multiplexer.addProcessor(powerBar);
 
@@ -462,8 +464,7 @@ public class GameScreen extends BaseScreen {
 	@Override
 	public void render(float delta) {
 		super.render(delta);
-		
-		  
+
 		gplayStatus.setChecked(PuckSlide.services.getSignedIn());
 
 		if (snow != null) {

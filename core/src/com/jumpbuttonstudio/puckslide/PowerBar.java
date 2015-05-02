@@ -12,7 +12,7 @@ public class PowerBar extends Image implements InputProcessor {
 	float timeDown, timeMax = 1.0f;
 	float launchTime, timeCap = 2f;
 	int flip;
-	float originalCamX, finalCamX;
+	float originalCamX, finalCamX, zoomAmount = 0.2f;
 	boolean set, forward = true, roll;
 	float barX;
 	Image barBG, bar;
@@ -53,16 +53,16 @@ public class PowerBar extends Image implements InputProcessor {
 // }
 
 			barX = getX() + (getWidth() - 8) * 2
-					* Math.abs((timeDown / 2) - MathUtils.floor((timeDown / 2) + 0.5f));
+					* Math.abs((timeDown / 2) - MathUtils.floor((timeDown / 2) + 0.5f)); //triangle wave formula
 			if (timeDown < timeMax) {
 				if (gameScreen.score > 100) {
 					if (flip == 0) {
-						gameScreen.camera.zoom = -(1 - (timeDown / timeMax) * 0.25f);
+						gameScreen.camera.zoom = -(1 - (timeDown / timeMax) * zoomAmount);
 					} else {
-						gameScreen.camera.zoom = 1 - (timeDown / timeMax) * 0.25f;
+						gameScreen.camera.zoom = 1 - (timeDown / timeMax) * zoomAmount;
 					}
 				} else {
-					gameScreen.camera.zoom = 1 - (timeDown / timeMax) * 0.25f;
+					gameScreen.camera.zoom = 1 - (timeDown / timeMax) * zoomAmount;
 				}
 				if (!set) {
 					set = true;
