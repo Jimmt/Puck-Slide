@@ -39,19 +39,6 @@ public class PowerBar extends Image implements InputProcessor {
 
 		if (startTime) {
 			check = false;
-
-// if (forward) {
-// barX = getX() + (timeDown % timeMax) * getWidth();
-// if (barX > getX() + getWidth() - 8) {
-// forward = false;
-// }
-// } else {
-// barX = getX() + getWidth() - (timeDown % timeMax) * getWidth();
-// if (barX < getX() + 8) {
-// forward = true;
-// }
-// }
-
 			barX = getX() + (getWidth() - 8) * 2
 					* Math.abs((timeDown / 2) - MathUtils.floor((timeDown / 2) + 0.5f)); //triangle wave formula
 			if (timeDown < timeMax) {

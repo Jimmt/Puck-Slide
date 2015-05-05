@@ -2,6 +2,8 @@ package com.jumpbuttonstudio.puckslide;
 
 public interface IGoogleServices {
 	public void signIn();
+	
+	public void signOut();
 
 	public void submitHighscore(int score);
 
@@ -14,4 +16,6 @@ public interface IGoogleServices {
 	public boolean getSignedIn();
 	
 	public void showOrLoadInterstitial();
+	
+	public void removeAds();
 }

@@ -27,26 +27,29 @@ import com.google.android.gms.ads.identifier.AdvertisingIdClient;
 import com.google.android.gms.ads.identifier.AdvertisingIdClient.Info;
 import com.google.android.gms.common.GooglePlayServicesNotAvailableException;
 import com.google.android.gms.common.GooglePlayServicesRepairableException;
+import com.google.android.gms.common.GooglePlayServicesUtil;
 import com.google.example.games.basegameutils.GameHelper;
 import com.google.example.games.basegameutils.GameHelper.GameHelperListener;
+import com.jumpbuttonstudio.puckslide.Prefs;
 import com.jumpbuttonstudio.puckslide.PuckSlide;
 
 public class AndroidLauncher extends AndroidApplication implements GameHelperListener, IabInterface {
 	private GameHelper helper;
-	private static final String AD_UNIT_ID_BANNER = "ca-app-pub-6916351754834612/9855033027";
-	private static final String AD_UNIT_ID_INTERSTITIAL = "ca-app-pub-6916351754834612/3808499421";
+	private static final String AD_UNIT_ID_BANNER = "ca-app-pub-8823077351295808/7430625172";
+	private static final String AD_UNIT_ID_INTERSTITIAL = "ca-app-pub-8823077351295808/1375588373"; 
 	private String licenseKey = "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEA5cTtUZ8EETuf6oCjA5ND8dA3Tv1j4ZzXP9T6k2VD31mfT7XFI5TTJtx3G4+vbetSR5ZzZGRwVEZ/DzJynvGzOtzfRwrQ18Y5yD+F00ilklLmnGG02YWZlG0HT1AN/01zjnnalQUtjRPludaR2y/BLKhKCahmrvikdefNwth/2Lwj+1gDtC/YDj0iHatnM6Aj4hs1/a4ngaIpaiUh6f8l0eCVpEowUjmGvD/oOqg7Cl6RcvnmVsYE8t6SuMllfRq86SvaZsQiL250RU8N3w8SHeAYrqFFc0afHQz6dT94OhRvD6oibQtHrFPquA76nxFeHRqScaRkRQY2m/yLGTgAjwIDAQAB";
 	private AndroidServices services;
 	private IabHelper mHelper;
 	public InterstitialAd interstitialAd;
-	protected AdView adView;
+	protected AdView adView, admobView;
 	protected View gameView;
+	private RelativeLayout layout;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		requestWindowFeature(Window.FEATURE_NO_TITLE);
 		super.onCreate(savedInstanceState);
-
+		
 		// compute your public key and store it in base64EncodedPublicKey
 		mHelper = new IabHelper(this, licenseKey);
 
@@ -59,7 +62,7 @@ public class AndroidLauncher extends AndroidApplication implements GameHelperLis
 				// Hooray, IAB is fully set up!
 				Log.d("IAB", "Billing Success: " + result);
 
-//				removeAds();
+// removeAds();
 			}
 		});
 
@@ -83,12 +86,12 @@ public class AndroidLauncher extends AndroidApplication implements GameHelperLis
 				WindowManager.LayoutParams.FLAG_FULLSCREEN);
 		getWindow().clearFlags(WindowManager.LayoutParams.FLAG_FORCE_NOT_FULLSCREEN);
 
-		RelativeLayout layout = new RelativeLayout(this);
+		layout = new RelativeLayout(this);
 		RelativeLayout.LayoutParams params = new RelativeLayout.LayoutParams(
 				RelativeLayout.LayoutParams.MATCH_PARENT, RelativeLayout.LayoutParams.MATCH_PARENT);
 		layout.setLayoutParams(params);
 
-		AdView admobView = createAdView();
+		admobView = createAdView();
 		layout.addView(admobView);
 		View gameView = createGameView(config);
 		layout.addView(gameView);
@@ -97,22 +100,23 @@ public class AndroidLauncher extends AndroidApplication implements GameHelperLis
 		startAdvertising(admobView);
 
 		interstitialAd = new InterstitialAd(this);
-		
+
 		interstitialAd.setAdUnitId(AD_UNIT_ID_INTERSTITIAL);
 		interstitialAd.setAdListener(new AdListener() {
 			@Override
 			public void onAdLoaded() {
-//				Toast.makeText(getApplicationContext(), "Finished Loading Interstitial",
-//						Toast.LENGTH_SHORT).show();
+// Toast.makeText(getApplicationContext(), "Finished Loading Interstitial",
+// Toast.LENGTH_SHORT).show();
 			}
 
 			@Override
 			public void onAdClosed() {
-//				Toast.makeText(getApplicationContext(), "Closed Interstitial", Toast.LENGTH_SHORT)
-//						.show();
+// Toast.makeText(getApplicationContext(), "Closed Interstitial",
+// Toast.LENGTH_SHORT)
+// .show();
 			}
 		});
-		
+
 	}
 
 	public void getId() {
@@ -137,7 +141,6 @@ public class AndroidLauncher extends AndroidApplication implements GameHelperLis
 		final String id = adInfo.getId();
 		System.out.println(id);
 	}
-	
 
 	private AdView createAdView() {
 		adView = new AdView(this);
@@ -172,11 +175,14 @@ public class AndroidLauncher extends AndroidApplication implements GameHelperLis
 
 	@Override
 	public void onDestroy() {
+		
 		adView.destroy();
 		super.onDestroy();
 		if (mHelper != null)
 			mHelper.dispose();
 		mHelper = null;
+		
+		android.os.Process.killProcess(android.os.Process.myPid());
 	}
 
 	@Override
@@ -221,17 +227,21 @@ public class AndroidLauncher extends AndroidApplication implements GameHelperLis
 
 				if (purchase.getSku().equals(SKU_REMOVE_ADS)) {
 					Log.d("IAB", "Purchase is premium upgrade. Congratulating user.");
+					layout.removeView(admobView);
+					Prefs.prefs.putBoolean("ads", false);
 
 				}
+
 			}
 		};
+		mHelper.flagEndAsync();
 		mHelper.launchPurchaseFlow(this, SKU_REMOVE_ADS, RC_REQUEST, mPurchaseFinishedListener,
 				"HANDLE_PAYLOADS");
 
 	}
-	
+
 	@Override
-	public void onResume(){
+	public void onResume() {
 		adView.resume();
 		super.onResume();
 	}

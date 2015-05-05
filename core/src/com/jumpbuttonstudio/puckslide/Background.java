@@ -88,7 +88,6 @@ public class Background extends Actor {
 
 			Image cloud = new Image(Textures.getTex("Background/cloudsback.png"));
 			cloud.setSize(cloud.getWidth() / 100f, cloud.getHeight() / 100f);
-			System.out.println(Constants.SCLHEIGHT);
 			cloud.setPosition(nextBackCloud, Constants.SCLHEIGHT - cloud.getHeight());
 			nextBackCloud += 6;
 			backClouds.add(cloud);

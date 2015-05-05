@@ -23,6 +23,12 @@ public class AndroidServices implements GameHelperListener, ActionResolver, IGoo
 
 		loginGPGS();
 	}
+	
+	@Override
+	public void signOut() {
+		logoutGPGS();
+		
+	}
 
 	@Override
 	public boolean getSignedInGPGS() {
@@ -35,6 +41,18 @@ public class AndroidServices implements GameHelperListener, ActionResolver, IGoo
 			launcher.runOnUiThread(new Runnable() {
 				public void run() {
 					gameHelper.beginUserInitiatedSignIn();
+				}
+			});
+		} catch (final Exception ex) {
+		}
+	}
+	
+	@Override
+	public void logoutGPGS() {
+		try {
+			launcher.runOnUiThread(new Runnable() {
+				public void run() {
+					gameHelper.signOut();
 				}
 			});
 		} catch (final Exception ex) {
@@ -123,5 +141,13 @@ public class AndroidServices implements GameHelperListener, ActionResolver, IGoo
 		} catch (Exception e) {
 		}
 	}
+
+	@Override
+	public void removeAds() {
+		launcher.removeAds();
+		
+	}
+
+	
 
 }

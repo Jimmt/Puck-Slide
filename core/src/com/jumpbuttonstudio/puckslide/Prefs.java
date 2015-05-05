@@ -22,7 +22,7 @@ public class Prefs {
 
 		}
 		if (!prefs.contains("ads")) {
-			prefs.putBoolean("ads", false);
+			prefs.putBoolean("ads", true);
 		}
 		prefs.flush();
 

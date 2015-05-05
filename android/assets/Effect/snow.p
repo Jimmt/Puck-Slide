@@ -10,8 +10,8 @@ max: 5000
 - Emission - 
 lowMin: 0.0
 lowMax: 0.0
-highMin: 300.0
-highMax: 300.0
+highMin: 20.0
+highMax: 80.0
 relative: false
 scalingCount: 2
 scaling0: 1.0
@@ -152,5 +152,6 @@ continuous: true
 aligned: false
 additive: true
 behind: false
+premultipliedAlpha: false
 - Image Path -
-particle.png
+/C:/Users/Austin/Downloads/libgdx-nightly-20150426/particle.png

@@ -43,5 +43,17 @@ public class DesktopGoogleServices implements IGoogleServices {
 		// TODO Auto-generated method stub
 		
 	}
+
+	@Override
+	public void removeAds() {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void signOut() {
+		// TODO Auto-generated method stub
+		
+	}
 	
 }

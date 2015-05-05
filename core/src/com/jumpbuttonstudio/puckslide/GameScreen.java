@@ -19,7 +19,6 @@ import com.badlogic.gdx.scenes.scene2d.ui.ImageButton.ImageButtonStyle;
 import com.badlogic.gdx.scenes.scene2d.ui.Label;
 import com.badlogic.gdx.scenes.scene2d.ui.Label.LabelStyle;
 import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
-import com.badlogic.gdx.scenes.scene2d.utils.TextureRegionDrawable;
 import com.badlogic.gdx.utils.Array;
 import com.jumpbuttonstudio.puckslide.GroundTile.TileType;
 
@@ -53,6 +52,8 @@ public class GameScreen extends BaseScreen {
 
 		Prefs.init();
 
+		this.gameOver = gameOver;
+
 		if (!gameOver) {
 			PuckSlide.soundManager.musics.get("menu").setLooping(true);
 			PuckSlide.soundManager.musics.get("ingame").setLooping(true);
@@ -60,11 +61,11 @@ public class GameScreen extends BaseScreen {
 		} else {
 			PuckSlide.sessionDeaths++;
 
-			if (PuckSlide.sessionDeaths % 5 == 0) {
+			if (PuckSlide.sessionDeaths % 2 == 0) {
 				PuckSlide.services.showOrLoadInterstitial();
 			}
+
 		}
-		this.gameOver = gameOver;
 
 		listener = new GameContactListener();
 		world.setContactListener(listener);
@@ -78,7 +79,7 @@ public class GameScreen extends BaseScreen {
 		for (int i = 0; i < 3; i++) {
 			Image image = new Image(Textures.getTex("Compliments/0" + i + ".png"));
 			compliments.add(image);
-			hudStage.addActor(image);
+			popupStage.addActor(image);
 			image.getColor().a = 0;
 		}
 		logo = new Image(Textures.getTex("Icon/logo.png"));
@@ -168,7 +169,7 @@ public class GameScreen extends BaseScreen {
 		gplay.addListener(new ClickListener() {
 			public void clicked(InputEvent event, float x, float y) {
 				if (PuckSlide.services.getSignedIn()) {
-
+					PuckSlide.services.signOut();
 				} else {
 					PuckSlide.services.signIn();
 				}
@@ -194,7 +195,7 @@ public class GameScreen extends BaseScreen {
 		});
 // removeAds.addListener(new ClickListener() {
 // public void clicked(InputEvent event, float x, float y) {
-		// // in app purchase
+// PuckSlide.services.removeAds();
 // }
 // });
 
@@ -241,7 +242,7 @@ public class GameScreen extends BaseScreen {
 		scoreLabel.addAction(Actions.alpha(0));
 		pointsLabel = new PointsLabel("", labelStyle);
 		hudStage.addActor(scoreLabel);
-		hudStage.addActor(pointsLabel);
+		popupStage.addActor(pointsLabel);
 
 		tiles = new Array<GroundTile>();
 		temp = new Array<GroundTile>();
@@ -259,7 +260,10 @@ public class GameScreen extends BaseScreen {
 		} else {
 			home.setVisible(puck != null);
 		}
-		PuckSlide.services.signIn();
+		if (!PuckSlide.triedSignIn) {
+			PuckSlide.triedSignIn = true;
+			PuckSlide.services.signIn();
+		}
 	}
 
 	class VisibleAction extends Action {
@@ -326,11 +330,19 @@ public class GameScreen extends BaseScreen {
 				+ puck.getHeight() + arrow.getHeight() / 2);
 		arrowX = puck.getX() + puck.getWidth() / 2 - arrow.getWidth() / 2;
 		powerBar = new PowerBar(puck, this);
-		powerBar.setPosition(Constants.WIDTH / 2 - powerBar.getWidth() / 2, powerBar.getHeight() / 2f);
+		powerBar.setPosition(Constants.WIDTH / 2 - powerBar.getWidth() / 2,
+				powerBar.getHeight() / 2f);
 		hudStage.addActor(powerBar);
 		multiplexer.addProcessor(powerBar);
 
 		setupSnow();
+
+		if (!PuckSlide.showedTutorial) {
+			TutorialDialog tutDialog = new TutorialDialog(skin);
+			tutDialog.show(hudStage);
+			tutDialog.setFillParent(true);
+			PuckSlide.showedTutorial = true;
+		}
 	}
 
 	public void setupSnow() {
@@ -397,7 +409,8 @@ public class GameScreen extends BaseScreen {
 						+ tiles.get(end).getWidth()
 						/ 2
 						+ MathUtils.random(0.1f, (tiles.size - 1 - end)
-								* tiles.get(tiles.size - 1).getWidth()), tiles.get(end).getHeight());
+								* tiles.get(tiles.size - 1).getWidth()) - 0.12f, tiles.get(end)
+						.getHeight());
 
 	}
 
@@ -465,6 +478,9 @@ public class GameScreen extends BaseScreen {
 	public void render(float delta) {
 		super.render(delta);
 
+		camera.update();
+		popupStage.getCamera().position.set(camera.position);
+
 		gplayStatus.setChecked(PuckSlide.services.getSignedIn());
 
 		if (snow != null) {
@@ -476,7 +492,7 @@ public class GameScreen extends BaseScreen {
 
 			if (lastSnowChange > snowChangeTime) {
 				lastSnowChange = 0;
-				snow.getEmitters().get(0).getEmission().setHigh(MathUtils.random(0, 275));
+// snow.getEmitters().get(0).getEmission().setHigh(MathUtils.random(0, 0));
 				snow.getEmitters()
 						.get(0)
 						.getWind()
@@ -545,14 +561,18 @@ public class GameScreen extends BaseScreen {
 					PuckSlide.soundManager.play("success", 0.2f);
 				}
 
-				Vector3 position = new Vector3(puck.getX() + puck.getWidth() / 2
-						- pointsLabel.getWidth() / 2, puck.getY() + puck.getHeight() * 3, 0);
-				camera.project(position);
-				pointsLabel.setPosition(position.x, position.y);
+// Vector3 position = new Vector3(puck.getX() + puck.getWidth() / 2
+// - pointsLabel.getWidth() / 2, puck.getY() + puck.getHeight() * 3, 0);
+// viewport.project(position);
+
+				float x = puck.getX() + puck.getWidth() / 2 - pointsLabel.getWidth() / 2;
+				float y = puck.getY() + puck.getHeight() * 3;
+				pointsLabel.setPosition(x, y);
+
 				for (int i = 0; i < compliments.size; i++) {
 					compliments.get(i).setPosition(
-							position.x + puck.getWidth() / 2 - compliments.get(i).getWidth() / 2,
-							position.y + pointsLabel.getHeight() * 1.5f);
+							x + puck.getWidth() / 2 - compliments.get(i).getWidth() / 2,
+							y + pointsLabel.getHeight() * 1.5f);
 				}
 
 				if (!pointsLabel.applied) {
@@ -564,21 +584,21 @@ public class GameScreen extends BaseScreen {
 						compliments.get(2).addAction(
 								Actions.sequence(Actions.alpha(0), Actions.alpha(1, 0.2f),
 										Actions.delay(0.2f), Actions.alpha(0, 0.2f)));
-						return;
-					}
+						
+					} else 
 					if (foursCombo == 3) {
 
 						compliments.get(0).addAction(
 								Actions.sequence(Actions.alpha(0), Actions.alpha(1, 0.2f),
 										Actions.delay(0.2f), Actions.alpha(0, 0.2f)));
-						return;
-					}
+						
+					} else 
 					if (score > lastMultiple * 20) {
 						compliments.get(1).addAction(
 								Actions.sequence(Actions.alpha(0), Actions.alpha(1, 0.2f),
 										Actions.delay(0.2f), Actions.alpha(0, 0.2f)));
 						lastMultiple++;
-						return;
+						
 					}
 				}
 
@@ -587,8 +607,6 @@ public class GameScreen extends BaseScreen {
 			}
 
 		}
-
-		camera.update();
 
 		if (tiles.size > 0) {
 			if (camera.position.x < camX) {

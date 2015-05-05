@@ -12,7 +12,9 @@ public class PuckSlide extends Game {
 	public static IGoogleServices services;
 	public static int sessionDeaths = 0;
 
+	public static boolean triedSignIn = false;
 	public static boolean DEBUG = true;
+	public static boolean showedTutorial = false;
 
 	public PuckSlide(IGoogleServices services) {
 		PuckSlide.services = services;
@@ -21,7 +23,7 @@ public class PuckSlide extends Game {
 	@Override
 	public void create() {
 
-// DEBUG = false;
+		DEBUG = false;
 
 		soundManager = new SoundManager();
 		soundManager.loadSound("button", Gdx.files.internal("SFX/Button.wav"));
@@ -36,6 +38,8 @@ public class PuckSlide extends Game {
 
 		soundManager.setPlay(!DEBUG);
 
+		
+		
 		if (!DEBUG) {
 			setScreen(new SplashScreen(this));
 		} else {

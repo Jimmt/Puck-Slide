@@ -40,7 +40,7 @@ public class GroundTile extends Image {
 		FixtureDef fd = new FixtureDef();
 		fd.friction = type.friction;
 		EdgeShape shape = new EdgeShape();
-		shape.set(-getWidth() / 2, getHeight() / 2, getWidth() / 2, getHeight() / 2);
+		shape.set(-getWidth() / 2, getHeight() / 2 - 0.02f, getWidth() / 2, getHeight() / 2 - 0.02f);
 // PolygonShape shape = new PolygonShape();
 // shape.setAsBox(getWidth() / 2, getHeight() / 2);
 		fd.shape = shape;

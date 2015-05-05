@@ -12,7 +12,7 @@ import com.badlogic.gdx.scenes.scene2d.ui.Skin;
 import com.badlogic.gdx.utils.viewport.StretchViewport;
 
 public class BaseScreen implements Screen {
-	Stage stage, hudStage;
+	Stage stage, hudStage, popupStage;
 	OrthographicCamera camera;
 	Skin skin;
 	World world;
@@ -27,13 +27,12 @@ public class BaseScreen implements Screen {
 
 		aspect = Constants.WIDTH / Constants.HEIGHT;
 		viewport = new StretchViewport(Constants.SCLWIDTH, Constants.SCLHEIGHT);
-		
+		StretchViewport popupViewport = new StretchViewport(Constants.WIDTH, Constants.HEIGHT);
 
 		stage = new Stage(viewport);
 		hudViewport = new StretchViewport(Constants.WIDTH, Constants.HEIGHT);
 		hudStage = new Stage(hudViewport);
-
-		hudStage = new Stage(hudViewport);
+		popupStage = new Stage(popupViewport);
 
 		camera = (OrthographicCamera) stage.getCamera();
 
@@ -54,12 +53,13 @@ public class BaseScreen implements Screen {
 		Gdx.gl.glClearColor(0, 0, 0, 1);
 		Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
 
-		
 		world.step(1 / 60f, 3, 3);
 
 		stage.act(delta);
 		stage.draw();
 		hudStage.act(delta);
+		popupStage.act(delta);
+		popupStage.draw();
 		hudViewport.update(Gdx.graphics.getWidth(), Gdx.graphics.getHeight(), true);
 
 // renderer.render(world, camera.combined);
@@ -71,17 +71,16 @@ public class BaseScreen implements Screen {
 		viewport.apply();
 		hudViewport.update(width, height);
 		hudViewport.apply();
+		camera = (OrthographicCamera) stage.getCamera();
 	}
 
 	@Override
 	public void pause() {
-		// TODO Auto-generated method stub
 
 	}
 
 	@Override
 	public void resume() {
-		// TODO Auto-generated method stub
 
 	}
 
@@ -93,7 +92,6 @@ public class BaseScreen implements Screen {
 
 	@Override
 	public void dispose() {
-		// TODO Auto-generated method stub
 
 	}
 
