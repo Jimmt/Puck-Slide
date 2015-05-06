@@ -59,11 +59,7 @@ public class GameScreen extends BaseScreen {
 			PuckSlide.soundManager.musics.get("ingame").setLooping(true);
 			PuckSlide.soundManager.playMusic("menu", 0.2f);
 		} else {
-			PuckSlide.sessionDeaths++;
-
-			if (PuckSlide.sessionDeaths % 2 == 0) {
-				PuckSlide.services.showOrLoadInterstitial();
-			}
+			
 
 		}
 

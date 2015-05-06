@@ -19,8 +19,13 @@ public class RetryDialog extends Dialog {
 
 	public RetryDialog(final GameScreen gameScreen, int score, Skin skin) {
 		super("", skin);
-
 		
+		PuckSlide.sessionDeaths++;
+//		System.out.println(PuckSlide.sessionDeaths);
+		
+		if (PuckSlide.sessionDeaths % 2 == 0) {
+			PuckSlide.services.showOrLoadInterstitial();
+		}
 
 		Image panel = new Image(Textures.getTex("UI/gameover.png"));
 
