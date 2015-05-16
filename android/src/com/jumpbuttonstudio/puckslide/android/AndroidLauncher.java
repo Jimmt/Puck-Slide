@@ -1,7 +1,5 @@
 package com.jumpbuttonstudio.puckslide.android;
 
-import java.io.IOException;
-
 import android.app.ActionBar.LayoutParams;
 import android.content.Intent;
 import android.graphics.Color;
@@ -11,23 +9,18 @@ import android.view.View;
 import android.view.Window;
 import android.view.WindowManager;
 import android.widget.RelativeLayout;
-import android.widget.Toast;
 
 import com.badlogic.gdx.backends.android.AndroidApplication;
 import com.badlogic.gdx.backends.android.AndroidApplicationConfiguration;
 import com.example.android.trivialdrivesample.util.IabHelper;
 import com.example.android.trivialdrivesample.util.IabResult;
+import com.example.android.trivialdrivesample.util.Inventory;
 import com.example.android.trivialdrivesample.util.Purchase;
 import com.google.android.gms.ads.AdListener;
 import com.google.android.gms.ads.AdRequest;
 import com.google.android.gms.ads.AdSize;
 import com.google.android.gms.ads.AdView;
 import com.google.android.gms.ads.InterstitialAd;
-import com.google.android.gms.ads.identifier.AdvertisingIdClient;
-import com.google.android.gms.ads.identifier.AdvertisingIdClient.Info;
-import com.google.android.gms.common.GooglePlayServicesNotAvailableException;
-import com.google.android.gms.common.GooglePlayServicesRepairableException;
-import com.google.android.gms.common.GooglePlayServicesUtil;
 import com.google.example.games.basegameutils.GameHelper;
 import com.google.example.games.basegameutils.GameHelper.GameHelperListener;
 import com.jumpbuttonstudio.puckslide.Prefs;
@@ -36,7 +29,7 @@ import com.jumpbuttonstudio.puckslide.PuckSlide;
 public class AndroidLauncher extends AndroidApplication implements GameHelperListener, IabInterface {
 	private GameHelper helper;
 	private static final String AD_UNIT_ID_BANNER = "ca-app-pub-8823077351295808/7430625172";
-	private static final String AD_UNIT_ID_INTERSTITIAL = "ca-app-pub-8823077351295808/1375588373"; 
+	private static final String AD_UNIT_ID_INTERSTITIAL = "ca-app-pub-8823077351295808/1375588373";
 	private String licenseKey = "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEA5cTtUZ8EETuf6oCjA5ND8dA3Tv1j4ZzXP9T6k2VD31mfT7XFI5TTJtx3G4+vbetSR5ZzZGRwVEZ/DzJynvGzOtzfRwrQ18Y5yD+F00ilklLmnGG02YWZlG0HT1AN/01zjnnalQUtjRPludaR2y/BLKhKCahmrvikdefNwth/2Lwj+1gDtC/YDj0iHatnM6Aj4hs1/a4ngaIpaiUh6f8l0eCVpEowUjmGvD/oOqg7Cl6RcvnmVsYE8t6SuMllfRq86SvaZsQiL250RU8N3w8SHeAYrqFFc0afHQz6dT94OhRvD6oibQtHrFPquA76nxFeHRqScaRkRQY2m/yLGTgAjwIDAQAB";
 	private AndroidServices services;
 	private IabHelper mHelper;
@@ -44,12 +37,13 @@ public class AndroidLauncher extends AndroidApplication implements GameHelperLis
 	protected AdView adView, admobView;
 	protected View gameView;
 	private RelativeLayout layout;
+	private boolean displayAds;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		requestWindowFeature(Window.FEATURE_NO_TITLE);
 		super.onCreate(savedInstanceState);
-		
+
 		// compute your public key and store it in base64EncodedPublicKey
 		mHelper = new IabHelper(this, licenseKey);
 
@@ -62,7 +56,9 @@ public class AndroidLauncher extends AndroidApplication implements GameHelperLis
 				// Hooray, IAB is fully set up!
 				Log.d("IAB", "Billing Success: " + result);
 
-// removeAds();
+//				removeAds();
+				
+				mHelper.queryInventoryAsync(mGotInventoryListener);
 			}
 		});
 
@@ -118,29 +114,39 @@ public class AndroidLauncher extends AndroidApplication implements GameHelperLis
 		});
 
 	}
+	
+	IabHelper.QueryInventoryFinishedListener mGotInventoryListener = new IabHelper.QueryInventoryFinishedListener() {
+		public void onQueryInventoryFinished(IabResult result, Inventory inventory) {
+			Log.d("IAB", "Query inventory finished.");
 
-	public void getId() {
-		Info adInfo = null;
-		try {
-			adInfo = AdvertisingIdClient.getAdvertisingIdInfo(this);
+			// Have we been disposed of in the meantime? If so, quit.
+			if (mHelper == null)
+				return;
 
-		} catch (IOException e) {
-			// Unrecoverable error connecting to Google Play services (e.g.,
-			// the old version of the service doe sn't support getting
-// AdvertisingId).
+			// Is it a failure?
+			if (result.isFailure()) {
+				Log.d("IAB", "Failed to query inventory: " + result);
+				return;
+			}
 
-		} catch (GooglePlayServicesNotAvailableException e) {
-			// Google Play services is not available entirely.
-		} catch (IllegalStateException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} catch (GooglePlayServicesRepairableException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+			Log.d("IAB", "Query inventory was successful.");
+
+			/*
+			 * Check for items we own. Notice that for each purchase, we check
+			 * the developer payload to see if it's correct! See
+			 * verifyDeveloperPayload().
+			 */
+
+			// Do we have the premium upgrade?
+			Purchase purchase = inventory.getPurchase("remove_ads");
+			displayAds = !(purchase != null);
+			Log.d("IAB", displayAds ? "Displaying ads" : "Not displaying ads");
+			
+			if(!displayAds){
+				layout.removeView(admobView);
+			}
 		}
-		final String id = adInfo.getId();
-		System.out.println(id);
-	}
+	};
 
 	private AdView createAdView() {
 		adView = new AdView(this);
@@ -175,13 +181,13 @@ public class AndroidLauncher extends AndroidApplication implements GameHelperLis
 
 	@Override
 	public void onDestroy() {
-		
+
 		adView.destroy();
 		super.onDestroy();
 		if (mHelper != null)
 			mHelper.dispose();
 		mHelper = null;
-		
+
 		android.os.Process.killProcess(android.os.Process.myPid());
 	}
 
@@ -197,6 +203,11 @@ public class AndroidLauncher extends AndroidApplication implements GameHelperLis
 
 		super.onActivityResult(requestCode, resultCode, data);
 		helper.onActivityResult(requestCode, resultCode, data);
+	}
+	
+	@Override
+	public boolean getDisplayAds(){
+		return displayAds;
 	}
 
 	@Override
@@ -217,6 +228,13 @@ public class AndroidLauncher extends AndroidApplication implements GameHelperLis
 					// setWaitScreen(false);
 					return;
 				}
+				
+				runOnUiThread(new Runnable() {
+					@Override
+					public void run() {
+						layout.removeView(adView);
+					}
+				});
 // if (!verifyDeveloperPayload(purchase)) {
 // //complain("Error purchasing. Authenticity verification failed.");
 // //setWaitScreen(false);
@@ -224,13 +242,6 @@ public class AndroidLauncher extends AndroidApplication implements GameHelperLis
 // }
 
 				Log.d("IAB", "Purchase successful.");
-
-				if (purchase.getSku().equals(SKU_REMOVE_ADS)) {
-					Log.d("IAB", "Purchase is premium upgrade. Congratulating user.");
-					layout.removeView(admobView);
-					Prefs.prefs.putBoolean("ads", false);
-
-				}
 
 			}
 		};

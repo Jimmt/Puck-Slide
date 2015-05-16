@@ -147,6 +147,11 @@ public class AndroidServices implements GameHelperListener, ActionResolver, IGoo
 		launcher.removeAds();
 		
 	}
+	
+	@Override
+	public boolean getDisplayAds(){
+		return launcher.getDisplayAds();
+	}
 
 	
 

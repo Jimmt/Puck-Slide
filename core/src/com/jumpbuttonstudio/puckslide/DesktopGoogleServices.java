@@ -55,5 +55,11 @@ public class DesktopGoogleServices implements IGoogleServices {
 		// TODO Auto-generated method stub
 		
 	}
+
+	@Override
+	public boolean getDisplayAds() {
+		// TODO Auto-generated method stub
+		return false;
+	}
 	
 }

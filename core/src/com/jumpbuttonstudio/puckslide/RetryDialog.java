@@ -23,7 +23,7 @@ public class RetryDialog extends Dialog {
 		PuckSlide.sessionDeaths++;
 //		System.out.println(PuckSlide.sessionDeaths);
 		
-		if (PuckSlide.sessionDeaths % 2 == 0) {
+		if (PuckSlide.sessionDeaths % 2 == 0 && PuckSlide.services.getDisplayAds()) {
 			PuckSlide.services.showOrLoadInterstitial();
 		}
 

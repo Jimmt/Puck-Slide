@@ -18,4 +18,8 @@ public interface IGoogleServices {
 	public void showOrLoadInterstitial();
 	
 	public void removeAds();
+	
+	public boolean getDisplayAds();
+	
+	
 }

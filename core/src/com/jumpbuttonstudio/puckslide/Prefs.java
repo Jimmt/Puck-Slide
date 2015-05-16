@@ -21,9 +21,6 @@ public class Prefs {
 			PuckSlide.soundManager.setPlay(prefs.getBoolean("sound"));
 
 		}
-		if (!prefs.contains("ads")) {
-			prefs.putBoolean("ads", true);
-		}
 		prefs.flush();
 
 	}
